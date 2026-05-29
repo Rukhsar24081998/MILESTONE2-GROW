@@ -211,6 +211,16 @@ def retrieve(
             collection, query, detected_scheme, top_k
         )
 
+    if not retrieval_results:
+        logger.info("No semantic hits; trying keyword fallback")
+        retrieval_results = _keyword_fallback_retrieve(
+            collection, query, detected_scheme, top_k
+        )
+    if not retrieval_results and detected_scheme:
+        retrieval_results = _keyword_fallback_retrieve(
+            collection, query, None, top_k
+        )
+
     return RetrievalResponse(
         query=query,
         detected_scheme=detected_scheme,
