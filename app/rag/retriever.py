@@ -66,10 +66,11 @@ def get_collection(
     """Get existing collection, or None if the index has not been built yet."""
     try:
         if for_query:
-            return client.get_collection(
-                name=collection_name,
-                embedding_function=_get_embedding_function(),
-            )
+            # get_collection(embedding_function=...) often fails on existing stores;
+            # get_or_create_collection attaches the configured embedder reliably.
+            from ingestion.phase1_4.indexer import get_or_create_collection
+
+            return get_or_create_collection(client, collection_name)
         return client.get_collection(name=collection_name)
     except (ValueError, Exception):
         return None
@@ -240,15 +241,15 @@ def retrieve(
     # Step 2: Query Chroma
     client = get_chroma_client()
     collection = get_collection(client, collection_name, for_query=True)
+    retrieval_results: list[RetrievalResult] = []
     if collection is None:
+        retrieval_results = _keyword_fallback_from_jsonl(query, detected_scheme, top_k)
         return RetrievalResponse(
             query=query,
             detected_scheme=detected_scheme,
-            results=[],
-            total_retrieved=0,
+            results=retrieval_results,
+            total_retrieved=len(retrieval_results),
         )
-
-    retrieval_results: list[RetrievalResult] = []
     try:
         query_kwargs = {
             "query_texts": [query],

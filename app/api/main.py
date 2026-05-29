@@ -241,7 +241,7 @@ async def health_check():
         "timestamp": datetime.now().isoformat(),
         "version": "1.0.0",
         "index": index_status,
-        "build": "a8b57a8",
+        "build": "fix-collection-query",
         "chunks_on_disk": chunks_on_disk,
     }
 
