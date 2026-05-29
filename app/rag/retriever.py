@@ -8,13 +8,15 @@ Implements hybrid retrieval:
 
 from __future__ import annotations
 
+import json
 import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional
 
 import chromadb
 
-from app.config import VECTOR_STORE_DIR
+from app.config import PROJECT_ROOT, VECTOR_STORE_DIR
 from app.rag.embedder import get_embedding_function
 from app.rag.scheme_detector import detect_scheme
 
@@ -128,6 +130,63 @@ def _keyword_fallback_retrieve(
     return results
 
 
+def _keyword_fallback_from_jsonl(
+    query: str,
+    detected_scheme: Optional[str],
+    top_k: int,
+) -> list[RetrievalResult]:
+    """Last-resort retrieval from committed chunk files (no Chroma dependency)."""
+    chunks_dir = PROJECT_ROOT / "ingestion" / "chunks"
+    if not chunks_dir.is_dir():
+        return []
+
+    query_terms = [t for t in query.lower().split() if len(t) > 2]
+    if not query_terms:
+        return []
+
+    paths = sorted(chunks_dir.glob("*.jsonl"))
+    if detected_scheme:
+        preferred = chunks_dir / f"{detected_scheme}.jsonl"
+        if preferred.exists():
+            paths = [preferred] + [p for p in paths if p != preferred]
+
+    scored: list[tuple[float, RetrievalResult]] = []
+    for path in paths:
+        with path.open(encoding="utf-8") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                data = json.loads(line)
+                text = data.get("text", "")
+                if not text:
+                    continue
+                text_lower = text.lower()
+                matches = sum(1 for term in query_terms if term in text_lower)
+                if matches == 0:
+                    continue
+                score = matches / max(len(query_terms), 1)
+                scored.append(
+                    (
+                        score,
+                        RetrievalResult(
+                            chunk_id=data.get("chunk_id", ""),
+                            text=text,
+                            source_url=data.get("source_url", ""),
+                            scheme_id=data.get("scheme_id", ""),
+                            score=score,
+                            metadata={
+                                k: data[k]
+                                for k in ("scheme_name", "document_type", "page_section")
+                                if data.get(k)
+                            },
+                        ),
+                    )
+                )
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return [r for _, r in scored[:top_k]]
+
+
 def rerank_with_keyword_boost(results: dict, query: str) -> dict:
     """Rerank results by boosting chunks with more query term matches.
     
@@ -229,6 +288,10 @@ def retrieve(
     if not retrieval_results and detected_scheme:
         retrieval_results = _keyword_fallback_retrieve(
             client, collection_name, query, None, top_k
+        )
+    if not retrieval_results:
+        retrieval_results = _keyword_fallback_from_jsonl(
+            query, detected_scheme, top_k
         )
 
     return RetrievalResponse(
