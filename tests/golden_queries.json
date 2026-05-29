@@ -1,0 +1,62 @@
+[
+  {
+    "query": "expense ratio HDFC Mid Cap",
+    "expected_scheme": "hdfc-mid-cap-direct-growth",
+    "category": "expense_ratio",
+    "description": "Test expense ratio retrieval for Mid Cap fund"
+  },
+  {
+    "query": "exit load Silver ETF FoF",
+    "expected_scheme": "hdfc-silver-etf-fof-direct-growth",
+    "category": "exit_load",
+    "description": "Test exit load retrieval for Silver ETF FoF"
+  },
+  {
+    "query": "minimum SIP Small Cap",
+    "expected_scheme": "hdfc-small-cap-direct-growth",
+    "category": "sip_minimum",
+    "description": "Test SIP minimum retrieval for Small Cap fund"
+  },
+  {
+    "query": "benchmark Defence fund",
+    "expected_scheme": "hdfc-defence-direct-growth",
+    "category": "benchmark",
+    "description": "Test benchmark index retrieval for Defence fund"
+  },
+  {
+    "query": "exit load Flexi Cap",
+    "expected_scheme": "hdfc-flexi-cap-direct-growth",
+    "category": "exit_load",
+    "description": "Test exit load retrieval for Flexi Cap fund"
+  },
+  {
+    "query": "fund manager Mid Cap",
+    "expected_scheme": "hdfc-mid-cap-direct-growth",
+    "category": "fund_manager",
+    "description": "Test fund manager info for Mid Cap"
+  },
+  {
+    "query": "AUM Silver ETF",
+    "expected_scheme": "hdfc-silver-etf-fof-direct-growth",
+    "category": "aum",
+    "description": "Test assets under management for Silver ETF"
+  },
+  {
+    "query": "returns Small Cap 3 year",
+    "expected_scheme": "hdfc-small-cap-direct-growth",
+    "category": "returns",
+    "description": "Test returns data for Small Cap"
+  },
+  {
+    "query": "risk level Defence",
+    "expected_scheme": "hdfc-defence-direct-growth",
+    "category": "risk",
+    "description": "Test risk classification for Defence fund"
+  },
+  {
+    "query": "tax implication Flexi Cap",
+    "expected_scheme": "hdfc-flexi-cap-direct-growth",
+    "category": "tax",
+    "description": "Test tax information for Flexi Cap"
+  }
+]

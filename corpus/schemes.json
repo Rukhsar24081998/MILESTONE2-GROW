@@ -1,0 +1,49 @@
+{
+  "amc": {
+    "name": "HDFC Mutual Fund",
+    "website": "http://www.hdfcfund.com"
+  },
+  "product_context": "groww",
+  "schemes": [
+    {
+      "id": "hdfc-mid-cap-direct-growth",
+      "name": "HDFC Mid Cap Fund Direct Growth",
+      "category": "equity_mid_cap",
+      "groww_url": "https://groww.in/mutual-funds/hdfc-mid-cap-fund-direct-growth",
+      "aliases": ["HDFC Mid Cap", "mid cap fund", "hdfc mid cap"]
+    },
+    {
+      "id": "hdfc-flexi-cap-direct-growth",
+      "name": "HDFC Flexi Cap Direct Plan Growth",
+      "category": "equity_flexi_cap",
+      "groww_url": "https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth",
+      "aliases": [
+        "HDFC Equity Fund",
+        "hdfc equity fund",
+        "HDFC Flexi Cap",
+        "flexi cap fund"
+      ]
+    },
+    {
+      "id": "hdfc-small-cap-direct-growth",
+      "name": "HDFC Small Cap Fund Direct Growth",
+      "category": "equity_small_cap",
+      "groww_url": "https://groww.in/mutual-funds/hdfc-small-cap-fund-direct-growth",
+      "aliases": ["HDFC Small Cap", "small cap fund", "hdfc small cap"]
+    },
+    {
+      "id": "hdfc-defence-direct-growth",
+      "name": "HDFC Defence Fund Direct Growth",
+      "category": "equity_thematic",
+      "groww_url": "https://groww.in/mutual-funds/hdfc-defence-fund-direct-growth",
+      "aliases": ["HDFC Defence", "hdfc defence", "defence fund"]
+    },
+    {
+      "id": "hdfc-silver-etf-fof-direct-growth",
+      "name": "HDFC Silver ETF FoF Direct Growth",
+      "category": "commodities_silver_fof",
+      "groww_url": "https://groww.in/mutual-funds/hdfc-silver-etf-fof-direct-growth",
+      "aliases": ["HDFC Silver FoF", "silver FoF", "silver etf fof"]
+    }
+  ]
+}

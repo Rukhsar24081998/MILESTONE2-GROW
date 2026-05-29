@@ -1,0 +1,27 @@
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.dist/
+.pytest_cache/
+.mypy_cache/
+
+# Data & ingestion artifacts (Phase 1+)
+data/chroma/
+ingestion/raw/*.html
+!ingestion/raw/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Logs
+*.log

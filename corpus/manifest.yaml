@@ -1,0 +1,21 @@
+corpus_version: "1.0"
+policy: closed_allowlist
+citation_rules:
+  factual: scheme_groww_url
+  refusal_default_scheme_id: hdfc-flexi-cap-direct-growth
+allowed_urls:
+  - url: https://groww.in/mutual-funds/hdfc-mid-cap-fund-direct-growth
+    scheme_id: hdfc-mid-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth
+    scheme_id: hdfc-flexi-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/hdfc-small-cap-fund-direct-growth
+    scheme_id: hdfc-small-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/hdfc-defence-fund-direct-growth
+    scheme_id: hdfc-defence-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/hdfc-silver-etf-fof-direct-growth
+    scheme_id: hdfc-silver-etf-fof-direct-growth
+    document_type: groww_scheme_page

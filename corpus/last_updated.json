@@ -1,0 +1,27 @@
+{
+  "corpus_version": "1.0",
+  "note": "Populated after Phase 1 ingestion. Footer dates use per-scheme or max(fetched_at).",
+  "latest_fetched_at": "2026-05-29T08:33:44Z",
+  "schemes": {
+    "hdfc-mid-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/hdfc-mid-cap-fund-direct-growth",
+      "fetched_at": "2026-05-29T08:33:43Z"
+    },
+    "hdfc-flexi-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth",
+      "fetched_at": "2026-05-29T08:33:43Z"
+    },
+    "hdfc-small-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/hdfc-small-cap-fund-direct-growth",
+      "fetched_at": "2026-05-29T08:33:43Z"
+    },
+    "hdfc-defence-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/hdfc-defence-fund-direct-growth",
+      "fetched_at": "2026-05-29T08:33:44Z"
+    },
+    "hdfc-silver-etf-fof-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/hdfc-silver-etf-fof-direct-growth",
+      "fetched_at": "2026-05-29T08:33:44Z"
+    }
+  }
+}

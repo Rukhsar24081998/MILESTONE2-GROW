@@ -1,0 +1,82 @@
+name: Corpus Re-ingestion (Scheduled)
+
+on:
+  schedule:
+    # Run daily at 10:00 AM IST (4:30 AM UTC)
+    # IST = UTC+5:30, so 10:00 IST = 04:30 UTC
+    - cron: '30 4 * * *'
+  workflow_dispatch:  # Allow manual trigger
+    inputs:
+      force_refetch:
+        description: 'Force re-fetch even if cached'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write  # Allow committing updated corpus files
+
+jobs:
+  reingest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[rag,ingestion,dev]'
+
+      - name: Run ingestion pipeline
+        run: |
+          python -m ingestion.run_pipeline --step all ${{ github.event.inputs.force_refetch == 'true' && '--force' || '' }}
+
+      - name: Run tests
+        run: |
+          python -m pytest tests/ -v -k "phase1" --tb=short
+
+      - name: Check for corpus changes
+        id: git_status
+        run: |
+          git status --porcelain
+          echo "has_changes=$(git status --porcelain | wc -l | tr -d ' ')" >> $GITHUB_OUTPUT
+
+      - name: Commit updated corpus data
+        if: steps.git_status.outputs.has_changes != '0'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Actions"
+          git add corpus/ data/ ingestion/raw/ ingestion/parsed/ ingestion/chunks/
+          git commit -m "chore: auto-update corpus $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Corpus Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ steps.git_status.outputs.has_changes != '0' && '✅ Updated' || '⏭️ No changes' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Scheduled Time**: 10:00 AM IST (4:30 AM UTC)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Schemes**: 5 Groww pages" >> $GITHUB_STEP_SUMMARY
+          echo "- **Pipeline**: fetch → parse → chunk → index → metadata" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.git_status.outputs.has_changes }}" != "0" ]; then
+            echo "### ✅ Changes Detected & Committed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Updated files:" >> $GITHUB_STEP_SUMMARY
+            git status --porcelain >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⏭️ No Changes" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Corpus is already up-to-date. No commit needed." >> $GITHUB_STEP_SUMMARY
+          fi

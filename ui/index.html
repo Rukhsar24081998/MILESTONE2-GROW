@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grow RAG Chatbot</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --surface: #111319;
+            --surface-bright: #36393f;
+            --surface-container-low: #191c21;
+            --surface-container: #1d2025;
+            --surface-container-high: #272a30;
+            --on-surface: #e1e2e9;
+            --on-surface-variant: #bacac1;
+            --outline: #85948c;
+            --outline-variant: #31353F;
+            --primary: #44edb7;
+            --on-primary: #003828;
+            --primary-container: #00d09c;
+            --on-primary-container: #00533c;
+            --background: #0f1217;
+            --on-background: #e1e2e9;
+            --surface-variant: #1c1f25;
+            --error: #ffb4ab;
+            --font-main: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--background);
+            color: var(--on-background);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 16px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background-color: var(--surface-container-low);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--outline-variant);
+            padding: 24px 16px;
+        }
+
+        .sidebar-header {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--on-surface);
+            line-height: 1.2;
+        }
+
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: var(--on-surface-variant);
+            margin-top: 4px;
+        }
+
+        .btn-clear {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--surface-bright);
+            color: var(--on-surface);
+            border: 1px solid var(--outline-variant);
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 14px;
+            transition: background-color 0.2s;
+            margin-bottom: 24px;
+        }
+
+        .btn-clear:hover {
+            background-color: var(--surface-container-high);
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 32px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: var(--on-surface-variant);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: var(--surface-container);
+            color: var(--on-surface);
+        }
+
+        .nav-item.active {
+            background-color: var(--primary-container);
+            color: var(--on-primary-container);
+        }
+
+        .example-questions-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--on-surface-variant);
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .example-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        .example-list-item {
+            font-size: 13px;
+            color: var(--on-surface-variant);
+            font-style: italic;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .example-list-item:hover {
+            color: var(--primary);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .last-updated {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--on-surface-variant);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--primary-container);
+            border-radius: 50%;
+        }
+
+        .bottom-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--background);
+            position: relative;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 32px;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .top-bar-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background-color: rgba(0, 208, 156, 0.1);
+            border: 1px solid rgba(0, 208, 156, 0.2);
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--primary-container);
+        }
+
+        .top-bar-icons {
+            display: flex;
+            gap: 16px;
+            color: var(--on-surface-variant);
+        }
+        
+        .top-bar-icons i {
+            cursor: pointer;
+        }
+
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            scroll-behavior: smooth;
+        }
+
+        .chat-area-inner {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 24px;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+            transition: opacity 0.3s;
+        }
+
+        .logo-box {
+            width: 64px;
+            height: 64px;
+            background-color: var(--surface-container-high);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            border: 1px solid var(--outline-variant);
+        }
+
+        .logo-box i {
+            color: var(--primary-container);
+        }
+
+        .welcome-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .welcome-subtitle {
+            font-size: 16px;
+            color: var(--on-surface-variant);
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .disclaimer-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background-color: transparent;
+            border: 1px solid var(--outline-variant);
+            border-radius: 32px;
+            font-size: 14px;
+            font-family: var(--font-mono);
+            color: var(--on-surface-variant);
+        }
+
+        .disclaimer-pill i {
+            color: var(--primary-container);
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Chat Messages */
+        .date-pill {
+            align-self: center;
+            padding: 4px 12px;
+            background-color: var(--surface-container);
+            border: 1px solid var(--outline-variant);
+            border-radius: 16px;
+            font-size: 12px;
+            color: var(--on-surface-variant);
+            margin: 24px 0;
+        }
+
+        .message-row {
+            display: flex;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+
+        .message-row.user {
+            justify-content: flex-end;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .user-bubble {
+            background-color: var(--surface-bright);
+            padding: 16px 20px;
+            border-radius: 16px 16px 4px 16px;
+            color: var(--on-surface);
+            font-size: 16px;
+            max-width: 80%;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background-color: var(--surface-container-high);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--on-surface-variant);
+        }
+
+        .message-row.bot {
+            justify-content: flex-start;
+            gap: 16px;
+        }
+        
+        .bot-avatar {
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-container);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--on-primary-container);
+            flex-shrink: 0;
+        }
+
+        .bot-card {
+            background-color: var(--surface-variant);
+            border: 1px solid var(--outline-variant);
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .bot-card.refusal {
+            border-color: rgba(255, 180, 171, 0.3);
+        }
+
+        .bot-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--primary-container);
+        }
+        
+        .bot-card-header.refusal {
+            color: var(--error);
+        }
+
+        .bot-card-body {
+            color: var(--on-surface);
+            line-height: 1.6;
+        }
+
+        .bot-card-body ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        .bot-card-body li {
+            margin-bottom: 8px;
+        }
+
+        .highlight-tag {
+            background-color: rgba(0, 208, 156, 0.1);
+            color: var(--primary-container);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 14px;
+        }
+
+        .note-box {
+            background-color: var(--surface-container-low);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--on-surface-variant);
+            font-style: italic;
+        }
+
+        .sources-section {
+            border-top: 1px solid var(--outline-variant);
+            padding-top: 16px;
+        }
+        
+        .sources-title {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--on-surface-variant);
+            margin-bottom: 12px;
+        }
+
+        .source-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--surface-container);
+            border: 1px solid var(--outline-variant);
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: var(--on-surface);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .source-link:hover {
+            background-color: var(--surface-container-high);
+            border-color: var(--outline);
+        }
+        
+        .verified-footer {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary-container);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-top: 8px;
+        }
+        
+        .loading-bubble {
+            background-color: var(--surface-variant);
+            border: 1px solid var(--outline-variant);
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: var(--on-surface-variant);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .dot-flashing {
+            position: relative;
+            width: 6px;
+            height: 6px;
+            border-radius: 5px;
+            background-color: var(--primary-container);
+            color: var(--primary-container);
+            animation: dotFlashing 1s infinite linear alternate;
+            animation-delay: .5s;
+        }
+
+        .dot-flashing::before, .dot-flashing::after {
+            content: '';
+            display: inline-block;
+            position: absolute;
+            top: 0;
+            width: 6px;
+            height: 6px;
+            border-radius: 5px;
+            background-color: var(--primary-container);
+            color: var(--primary-container);
+            animation: dotFlashing 1s infinite alternate;
+        }
+
+        .dot-flashing::before {
+            left: -12px;
+            animation-delay: 0s;
+        }
+
+        .dot-flashing::after {
+            left: 12px;
+            animation-delay: 1s;
+        }
+
+        @keyframes dotFlashing {
+            0% { background-color: var(--primary-container); }
+            50%, 100% { background-color: rgba(0, 208, 156, 0.2); }
+        }
+
+        /* Input Area */
+        .input-container {
+            flex-shrink: 0;
+            padding: 24px 32px 32px 32px;
+            background-color: var(--background);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            z-index: 10;
+        }
+
+        .input-box {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            align-items: center;
+            background-color: var(--surface-container);
+            border: 1px solid var(--outline-variant);
+            border-radius: 12px;
+            padding: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .input-box:focus-within {
+            border-color: var(--primary-container);
+        }
+
+        .input-icon {
+            padding: 12px;
+            color: var(--on-surface-variant);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--on-surface);
+            font-size: 16px;
+            font-family: var(--font-main);
+            padding: 12px 8px;
+            outline: none;
+        }
+
+        .chat-input::placeholder {
+            color: var(--on-surface-variant);
+        }
+
+        .btn-send {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: var(--primary-container);
+            color: var(--on-primary-container);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        
+        .btn-send:hover:not(:disabled) {
+            background-color: var(--primary);
+        }
+
+        .btn-send:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+        
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: var(--surface-bright);
+            color: var(--on-surface-variant);
+        }
+
+        .footer-links {
+            margin-top: 12px;
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--on-surface-variant);
+        }
+        
+        .footer-links a {
+            color: var(--on-surface-variant);
+            text-decoration: none;
+        }
+        
+        .footer-links a:hover {
+            color: var(--on-surface);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">Grow RAG</div>
+            <div class="sidebar-subtitle">Professional Finance<br>Assistant</div>
+        </div>
+
+        <button class="btn-clear" onclick="clearChat()">
+            <i data-lucide="trash-2" width="16" height="16"></i>
+            Clear Chat
+        </button>
+
+        <ul class="nav-menu">
+            <a href="#" class="nav-item active">
+                <i data-lucide="home" width="18" height="18"></i> Home
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="help-circle" width="18" height="18"></i> Investment FAQ
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="trending-up" width="18" height="18"></i> Market Trends
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="history" width="18" height="18"></i> Historical Data
+            </a>
+        </ul>
+
+        <div class="example-questions-label">Example Questions</div>
+        <div class="example-list" id="exampleList">
+            <!-- Examples injected via JS -->
+            <div class="example-list-item" onclick="askExample('What is the expense ratio of HDFC Mid Cap Fund?')">"What is the expense ratio of HDFC Mid Cap Fund?"</div>
+            <div class="example-list-item" onclick="askExample('What is the exit load of HDFC Equity Fund?')">"What is the exit load of HDFC Equity Fund?"</div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="last-updated" id="statusBar">
+                <div class="status-dot"></div> LAST UPDATED: LOADING...
+            </div>
+            <div class="bottom-nav">
+                <a href="#" class="nav-item">
+                    <i data-lucide="help-circle" width="18" height="18"></i> Help
+                </a>
+                <a href="#" class="nav-item">
+                    <i data-lucide="settings" width="18" height="18"></i> Settings
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="top-bar-title">Grow RAG Chatbot</div>
+                <div class="badge">
+                    <div class="status-dot"></div> Index: Healthy
+                </div>
+            </div>
+            <div class="top-bar-icons">
+                <i data-lucide="info" width="20" height="20"></i>
+                <i data-lucide="settings" width="20" height="20"></i>
+            </div>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="chat-area-inner" id="chatMessages">
+                <!-- Welcome Screen -->
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="logo-box">
+                        <i data-lucide="sparkles" width="32" height="32"></i>
+                    </div>
+                    <h1 class="welcome-title">Grow RAG: Facts-Only Assistant</h1>
+                    <p class="welcome-subtitle">
+                        Instantly query verified documents for listed HDFC schemes. I synthesize complex financial data into concise, accurate answers.
+                    </p>
+                    <div class="disclaimer-pill">
+                        <i data-lucide="shield-check" width="16" height="16"></i> Facts-only. No investment advice.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-box">
+                <div class="input-icon">
+                    <i data-lucide="paperclip" width="20" height="20"></i>
+                </div>
+                <input 
+                    type="text" 
+                    id="chatInput" 
+                    class="chat-input" 
+                    placeholder="Ask a factual question about listed HDFC schemes..."
+                    autocomplete="off"
+                >
+                <button class="btn-send" id="btnSend" onclick="sendMessage()">
+                    <i data-lucide="arrow-up" width="20" height="20" id="iconArrowUp"></i>
+                    <i data-lucide="send" width="20" height="20" id="iconSend" style="display: none;"></i>
+                </button>
+            </div>
+            <div class="footer-links">
+                <span>Grow RAG can make mistakes. Verify important information.</span>
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        const API_BASE = 'http://localhost:8000';
+        let isChatActive = false;
+        
+        const chatInput = document.getElementById('chatInput');
+        const btnSend = document.getElementById('btnSend');
+        const iconArrowUp = document.getElementById('iconArrowUp');
+        const iconSend = document.getElementById('iconSend');
+        const chatMessages = document.getElementById('chatMessages');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const statusBar = document.getElementById('statusBar');
+        const exampleList = document.getElementById('exampleList');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadExamples();
+            loadCorpusStatus();
+
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            chatInput.addEventListener('input', () => {
+                const hasText = chatInput.value.trim().length > 0;
+                if (hasText) {
+                    iconArrowUp.style.display = 'none';
+                    iconSend.style.display = 'block';
+                } else {
+                    iconArrowUp.style.display = 'block';
+                    iconSend.style.display = 'none';
+                }
+            });
+        });
+
+        async function loadExamples() {
+            try {
+                const response = await fetch(`${API_BASE}/examples`);
+                const data = await response.json();
+                if(data.examples && data.examples.length > 0) {
+                    exampleList.innerHTML = data.examples.slice(0, 2).map(example => `
+                        <div class="example-list-item" onclick="askExample('${example.query.replace(/'/g, "\\'")}')">"${example.query}"</div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load examples:', error);
+            }
+        }
+
+        async function loadCorpusStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/corpus/status`);
+                const data = await response.json();
+                const lastUpdate = data.last_ingest_date ? new Date(data.last_ingest_date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) : 'UNKNOWN';
+                statusBar.innerHTML = `<div class="status-dot"></div> LAST UPDATED: TODAY, ${lastUpdate.toUpperCase()}`;
+            } catch (error) {
+                statusBar.innerHTML = `<div class="status-dot" style="background-color:var(--error)"></div> LAST UPDATED: OFFLINE`;
+            }
+        }
+
+        function askExample(query) {
+            chatInput.value = query;
+            iconArrowUp.style.display = 'none';
+            iconSend.style.display = 'block';
+            sendMessage();
+        }
+
+        function clearChat() {
+            isChatActive = false;
+            // Remove all messages, keeping only the welcome screen
+            const messages = chatMessages.querySelectorAll('.message-row, .date-pill');
+            messages.forEach(m => m.remove());
+            welcomeScreen.style.display = 'flex';
+            chatInput.value = '';
+            iconArrowUp.style.display = 'block';
+            iconSend.style.display = 'none';
+        }
+
+        function scrollToBottom() {
+            const chatArea = document.getElementById('chatArea');
+            // Use requestAnimationFrame to ensure DOM is updated before scrolling
+            requestAnimationFrame(() => {
+                chatArea.scrollTo({
+                    top: chatArea.scrollHeight,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
+        // Highlight percentages and numbers like 1.00% or Nil in bot response
+        function formatBotText(text) {
+            if (!text) return '';
+            // Highlighting percentage format and Nil 
+            let formatted = text.replace(/(\b\d+(\.\d+)?%|Nil\b)/g, '<span class="highlight-tag">$1</span>');
+            return formatted.replace(/\n/g, '<br>');
+        }
+
+        async function sendMessage() {
+            const query = chatInput.value.trim();
+            if (!query || btnSend.disabled) return;
+
+            // Hide welcome screen on first message
+            if (!isChatActive) {
+                welcomeScreen.style.display = 'none';
+                isChatActive = true;
+                
+                // Add Today pill
+                const datePill = document.createElement('div');
+                datePill.className = 'date-pill';
+                datePill.textContent = 'Today';
+                chatMessages.appendChild(datePill);
+            }
+
+            chatInput.value = '';
+            btnSend.disabled = true;
+            iconArrowUp.style.display = 'block';
+            iconSend.style.display = 'none';
+
+            // Append User Message
+            const userRow = document.createElement('div');
+            userRow.className = 'message-row user';
+            userRow.innerHTML = `
+                <div class="user-bubble">${escapeHtml(query)}</div>
+                <div class="avatar"><i data-lucide="user" width="16" height="16"></i></div>
+            `;
+            chatMessages.appendChild(userRow);
+            lucide.createIcons();
+            scrollToBottom();
+
+            // Append Loading State
+            const loadingRow = document.createElement('div');
+            loadingRow.className = 'message-row bot';
+            loadingRow.id = 'loadingRow';
+            loadingRow.innerHTML = `
+                <div class="bot-avatar"><i data-lucide="sparkles" width="16" height="16"></i></div>
+                <div class="loading-bubble">
+                    Thinking <div class="dot-flashing"></div>
+                </div>
+            `;
+            chatMessages.appendChild(loadingRow);
+            lucide.createIcons();
+            scrollToBottom();
+
+            try {
+                const response = await fetch(`${API_BASE}/ask`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                
+                const data = await response.json();
+                document.getElementById('loadingRow').remove();
+                
+                if (!response.ok) {
+                    throw new Error(data.detail || 'API request failed');
+                }
+                
+                appendBotMessage(data);
+
+            } catch(error) {
+                document.getElementById('loadingRow').remove();
+                appendBotMessage({
+                    type: 'error',
+                    text: error.message || 'An error occurred while fetching the answer.',
+                    refused: true
+                });
+            } finally {
+                btnSend.disabled = false;
+                scrollToBottom();
+            }
+        }
+
+        function appendBotMessage(data) {
+            const botRow = document.createElement('div');
+            botRow.className = 'message-row bot';
+            
+            const isError = data.refused || data.type === 'error';
+            const icon = isError ? 'alert-triangle' : 'check-circle-2';
+            const headerText = isError ? 'Refused / Error' : 'Verified Answer';
+            
+            let html = `
+                <div class="bot-avatar"><i data-lucide="sparkles" width="16" height="16"></i></div>
+                <div class="bot-card ${isError ? 'refusal' : ''}">
+                    <div class="bot-card-header ${isError ? 'refusal' : ''}">
+                        <i data-lucide="${icon}" width="16" height="16"></i> ${headerText}
+                    </div>
+                    <div class="bot-card-body">
+                        ${formatBotText(escapeHtml(data.text))}
+                    </div>
+            `;
+
+            // If it's a successful factual answer, add note and sources
+            if (!isError && data.citation_url) {
+                // Determine domain
+                let domain = "groww.in";
+                try {
+                    const urlObj = new URL(data.citation_url);
+                    domain = urlObj.hostname;
+                } catch(e) {}
+                
+                html += `
+                    <div class="note-box">
+                        Note: It's always recommended to check the latest Scheme Information Document (SID) as fund houses may revise these charges.
+                    </div>
+                    <div class="sources-section">
+                        <div class="sources-title">SOURCES</div>
+                        <a href="${data.citation_url}" target="_blank" class="source-link">
+                            <i data-lucide="link" width="14" height="14"></i> ${domain}/scheme-details <i data-lucide="external-link" width="12" height="12" style="margin-left: 4px; color: var(--on-surface-variant)"></i>
+                        </a>
+                        <div class="verified-footer">
+                            <i data-lucide="shield-check" width="12" height="12"></i> VERIFIED FROM ALLOWLISTED SOURCES
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            botRow.innerHTML = html;
+            chatMessages.appendChild(botRow);
+            lucide.createIcons();
+            scrollToBottom();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
