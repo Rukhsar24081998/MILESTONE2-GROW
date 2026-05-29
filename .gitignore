@@ -4,6 +4,9 @@
 venv/
 env/
 
+# Node.js
+node_modules/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -25,3 +28,6 @@ ingestion/raw/*.html
 
 # Logs
 *.log
+
+# Build
+.vercel-tmp/

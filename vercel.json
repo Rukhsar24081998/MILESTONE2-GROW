@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "ui/index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "app/api/main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "app/api/main.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "ui/index.html"
+    }
+  ],
+  "env": {
+    "EMBEDDING_MODEL": "BAAI/bge-small-en-v1.5",
+    "LLM_PROVIDER": "groq",
+    "LLM_MODEL": "llama-3.3-70b-versatile",
+    "LLM_TEMPERATURE": "0.1",
+    "LLM_MAX_TOKENS": "300"
+  }
+}
