@@ -43,9 +43,15 @@ def get_chroma_client() -> chromadb.ClientAPI:
     return chromadb.PersistentClient(path=str(VECTOR_STORE_DIR))
 
 
-def get_collection(client: chromadb.ClientAPI, collection_name: str = "hdfc_groww_corpus") -> chromadb.Collection:
-    """Get existing collection."""
-    return client.get_collection(name=collection_name)
+def get_collection(
+    client: chromadb.ClientAPI,
+    collection_name: str = "hdfc_groww_corpus",
+) -> chromadb.Collection | None:
+    """Get existing collection, or None if the index has not been built yet."""
+    try:
+        return client.get_collection(name=collection_name)
+    except (ValueError, Exception):
+        return None
 
 
 def rerank_with_keyword_boost(results: dict, query: str) -> dict:
@@ -101,7 +107,14 @@ def retrieve(
     # Step 2: Query Chroma
     client = get_chroma_client()
     collection = get_collection(client, collection_name)
-    
+    if collection is None:
+        return RetrievalResponse(
+            query=query,
+            detected_scheme=detected_scheme,
+            results=[],
+            total_retrieved=0,
+        )
+
     # Build query parameters
     query_kwargs = {
         "query_texts": [query],

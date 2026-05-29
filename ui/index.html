@@ -745,9 +745,41 @@
 
         // Backend API URL - Update this when deploying to production
         // Local: 'http://localhost:8000'
-        // Production: 'https://your-backend-url.onrender.com'
-        const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://milestone2-groww-backend.onrender.com';
+        // Production: 'https://milestone2-grow.onrender.com'
+        const API_BASE = (() => {
+            const meta = document.querySelector('meta[name="api-base"]');
+            if (meta && meta.content) return meta.content.replace(/\/$/, '');
+            return window.location.hostname === 'localhost'
+                ? 'http://localhost:8000'
+                : 'https://milestone2-grow.onrender.com';
+        })();
         let isChatActive = false;
+
+        function parseApiDetail(data) {
+            if (!data) return null;
+            if (typeof data.detail === 'string') return data.detail;
+            if (Array.isArray(data.detail)) {
+                return data.detail.map((d) => d.msg || JSON.stringify(d)).join('; ');
+            }
+            if (data.text) return data.text;
+            return null;
+        }
+
+        async function readJsonResponse(response) {
+            const contentType = response.headers.get('content-type') || '';
+            const raw = await response.text();
+            if (!raw) {
+                throw new Error('Empty response from backend. The service may still be starting — wait a minute and try again.');
+            }
+            if (!contentType.includes('application/json')) {
+                throw new Error('Backend is not responding with JSON. The Render service may be starting up — wait 30–60 seconds and try again.');
+            }
+            try {
+                return JSON.parse(raw);
+            } catch (e) {
+                throw new Error('Could not read the backend response. Please try again in a moment.');
+            }
+        }
         
         const chatInput = document.getElementById('chatInput');
         const btnSend = document.getElementById('btnSend');
@@ -783,7 +815,8 @@
         async function loadExamples() {
             try {
                 const response = await fetch(`${API_BASE}/examples`);
-                const data = await response.json();
+                if (!response.ok) return;
+                const data = await readJsonResponse(response);
                 if(data.examples && data.examples.length > 0) {
                     exampleList.innerHTML = data.examples.slice(0, 2).map(example => `
                         <div class="example-list-item" onclick="askExample('${example.query.replace(/'/g, "\\'")}')">"${example.query}"</div>
@@ -797,8 +830,19 @@
         async function loadCorpusStatus() {
             try {
                 const response = await fetch(`${API_BASE}/corpus/status`);
-                const data = await response.json();
-                const lastUpdate = data.last_ingest_date ? new Date(data.last_ingest_date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }) : 'UNKNOWN';
+                if (!response.ok) throw new Error('status not ok');
+                const data = await readJsonResponse(response);
+                let lastUpdate = 'UNKNOWN';
+                if (data.last_ingest_date) {
+                    const parsed = new Date(data.last_ingest_date);
+                    if (!Number.isNaN(parsed.getTime())) {
+                        lastUpdate = parsed.toLocaleString('en-US', {
+                            hour: 'numeric',
+                            minute: 'numeric',
+                            hour12: true,
+                        });
+                    }
+                }
                 statusBar.innerHTML = `<div class="status-dot"></div> LAST UPDATED: TODAY, ${lastUpdate.toUpperCase()}`;
             } catch (error) {
                 statusBar.innerHTML = `<div class="status-dot" style="background-color:var(--error)"></div> LAST UPDATED: OFFLINE`;
@@ -835,11 +879,18 @@
         }
 
         // Highlight percentages and numbers like 1.00% or Nil in bot response
-        function formatBotText(text) {
+        function formatBotText(text, { highlight = true } = {}) {
             if (!text) return '';
-            // Highlighting percentage format and Nil 
-            let formatted = text.replace(/(\b\d+(\.\d+)?%|Nil\b)/g, '<span class="highlight-tag">$1</span>');
-            return formatted.replace(/\n/g, '<br>');
+            if (!highlight) return String(text).replace(/\n/g, '<br>');
+            try {
+                const formatted = String(text).replace(
+                    /(\b\d+(\.\d+)?%|Nil\b)/g,
+                    '<span class="highlight-tag">$1</span>'
+                );
+                return formatted.replace(/\n/g, '<br>');
+            } catch (e) {
+                return String(text).replace(/\n/g, '<br>');
+            }
         }
 
         async function sendMessage() {
@@ -895,27 +946,31 @@
                     body: JSON.stringify({ query })
                 });
 
-                // Check if response is JSON before parsing
-                const contentType = response.headers.get('content-type') || '';
-                if (!contentType.includes('application/json')) {
-                    throw new Error('Backend is not responding. The Render service may be starting up — please wait 30-60 seconds and try again.');
-                }
-                
-                const data = await response.json();
+                const data = await readJsonResponse(response);
                 document.getElementById('loadingRow').remove();
-                
+
                 if (!response.ok) {
-                    throw new Error(data.detail || 'API request failed');
+                    const detail = parseApiDetail(data);
+                    const msg = detail || `Request failed (${response.status})`;
+                    if (response.status >= 500) {
+                        throw new Error(
+                            'The search service had an internal error. If this persists after redeploying the backend, the vector index may still be building — try again in a minute.'
+                        );
+                    }
+                    throw new Error(msg);
                 }
-                
+
                 appendBotMessage(data);
 
             } catch(error) {
                 const loadingEl = document.getElementById('loadingRow');
                 if (loadingEl) loadingEl.remove();
+                const message = error && error.message
+                    ? error.message
+                    : 'Could not reach the backend. Please try again in a moment.';
                 appendBotMessage({
                     type: 'error',
-                    text: error.message || 'Could not reach the backend. Please try again in a moment.',
+                    text: message,
                     refused: true
                 });
             } finally {
@@ -928,9 +983,10 @@
             const botRow = document.createElement('div');
             botRow.className = 'message-row bot';
             
-            const isError = data.refused || data.type === 'error';
+            const isError = data.refused || data.type === 'error' || data.type === 'refusal';
             const icon = isError ? 'alert-triangle' : 'check-circle-2';
             const headerText = isError ? 'Refused / Error' : 'Verified Answer';
+            const bodyText = data.text || parseApiDetail(data) || 'No response text.';
             
             let html = `
                 <div class="bot-avatar"><i data-lucide="sparkles" width="16" height="16"></i></div>
@@ -939,26 +995,33 @@
                         <i data-lucide="${icon}" width="16" height="16"></i> ${headerText}
                     </div>
                     <div class="bot-card-body">
-                        ${formatBotText(escapeHtml(data.text))}
+                        ${formatBotText(escapeHtml(bodyText), { highlight: !isError })}
                     </div>
             `;
 
             // If it's a successful factual answer, add note and sources
+            let citationHref = '';
             if (!isError && data.citation_url) {
-                // Determine domain
+                try {
+                    citationHref = new URL(data.citation_url).href;
+                } catch (e) {
+                    citationHref = '';
+                }
+            }
+
+            if (!isError && citationHref) {
                 let domain = "groww.in";
                 try {
-                    const urlObj = new URL(data.citation_url);
-                    domain = urlObj.hostname;
-                } catch(e) {}
-                
+                    domain = new URL(citationHref).hostname;
+                } catch (e) {}
+
                 html += `
                     <div class="note-box">
                         Note: It's always recommended to check the latest Scheme Information Document (SID) as fund houses may revise these charges.
                     </div>
                     <div class="sources-section">
                         <div class="sources-title">SOURCES</div>
-                        <a href="${data.citation_url}" target="_blank" class="source-link">
+                        <a href="${escapeHtml(citationHref)}" target="_blank" rel="noopener noreferrer" class="source-link">
                             <i data-lucide="link" width="14" height="14"></i> ${domain}/scheme-details <i data-lucide="external-link" width="12" height="12" style="margin-left: 4px; color: var(--on-surface-variant)"></i>
                         </a>
                         <div class="verified-footer">

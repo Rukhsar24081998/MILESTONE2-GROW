@@ -14,12 +14,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, validator
 
 from app.guardrails.generator import process_query
+from app.rag.retriever import get_chroma_client, get_collection
 from app.guardrails.validator import validate_response
 from app.guardrails.pii_filter import contains_pii
 from app.config import (
@@ -37,11 +40,54 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+def _ensure_vector_index() -> None:
+    """Build Chroma index from committed chunks when the store is empty (e.g. on Render)."""
+    try:
+        client = get_chroma_client()
+        collection = get_collection(client)
+        if collection is not None and collection.count() > 0:
+            logger.info("Vector index ready (%s chunks)", collection.count())
+            return
+    except Exception as exc:
+        logger.warning("Could not read vector index: %s", exc)
+
+    chunks_dir = PROJECT_ROOT / "ingestion" / "chunks"
+    if not chunks_dir.exists() or not any(chunks_dir.glob("*.jsonl")):
+        logger.warning("No chunk files found; skipping index build")
+        return
+
+    logger.info("Vector index missing or empty — building from ingestion/chunks...")
+    try:
+        from ingestion.phase1_4.indexer import (
+            DEFAULT_COLLECTION_NAME,
+            get_or_create_collection,
+            index_chunks_for_scheme,
+        )
+        from app.corpus import load_manifest
+
+        client = get_chroma_client()
+        collection = get_or_create_collection(client, DEFAULT_COLLECTION_NAME)
+        manifest = load_manifest()
+        for entry in manifest.allowed_urls:
+            index_chunks_for_scheme(entry.scheme_id, collection, chunks_dir)
+        logger.info("Vector index built (%s chunks)", collection.count())
+    except Exception as exc:
+        logger.error("Failed to build vector index on startup: %s", exc, exc_info=True)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    _ensure_vector_index()
+    yield
+
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Mutual Fund FAQ Assistant",
     description="Facts-only mutual fund Q&A system with closed corpus (5 Groww URLs)",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # Add CORS middleware for UI integration
@@ -89,6 +135,7 @@ class HealthResponse(BaseModel):
     status: str
     timestamp: str
     version: str
+    index: str = "unknown"
 
 
 class CorpusStatusResponse(BaseModel):
@@ -135,9 +182,19 @@ async def ask_question(request: QueryRequest):
         }
     
     logger.info(f"Processing query: {query[:50]}...")
-    
-    # Process through guardrails pipeline
-    response = process_query(query)
+
+    try:
+        response = process_query(query)
+    except Exception as exc:
+        logger.error("Query processing failed: %s", exc, exc_info=True)
+        return {
+            "type": "refusal",
+            "text": "I'm sorry, I couldn't search the corpus right now. Please try again in a moment.",
+            "citation_url": None,
+            "footer": f"Last updated from sources: {datetime.now().strftime('%Y-%m-%d')}",
+            "refused": True,
+            "reason": "processing_error",
+        }
     
     # Validate response
     is_valid, errors = validate_response(response)
@@ -163,10 +220,22 @@ async def ask_question(request: QueryRequest):
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Liveness check - verifies API is running."""
+    index_status = "unknown"
+    try:
+        client = get_chroma_client()
+        collection = get_collection(client)
+        if collection is None:
+            index_status = "missing"
+        else:
+            index_status = f"ready:{collection.count()}"
+    except Exception:
+        index_status = "error"
+
     return {
         "status": "ok",
         "timestamp": datetime.now().isoformat(),
         "version": "1.0.0",
+        "index": index_status,
     }
 
 
