@@ -74,17 +74,27 @@ def get_collection(
 
 
 def _keyword_fallback_retrieve(
-    collection: chromadb.Collection,
+    client: chromadb.ClientAPI,
+    collection_name: str,
     query: str,
     detected_scheme: Optional[str],
     top_k: int,
 ) -> list[RetrievalResult]:
     """Fallback when embedding-based query fails (e.g. model load on small hosts)."""
-    get_kwargs: dict = {"include": ["documents", "metadatas"]}
+    collection = get_collection(client, collection_name, for_query=False)
+    if collection is None:
+        return []
+
+    get_kwargs: dict = {"include": ["documents", "metadatas"], "limit": 500}
     if detected_scheme:
         get_kwargs["where"] = {"scheme_id": detected_scheme}
 
-    batch = collection.get(**get_kwargs)
+    try:
+        batch = collection.get(**get_kwargs)
+    except Exception as exc:
+        logger.warning("Keyword fallback get() failed: %s", exc)
+        get_kwargs.pop("where", None)
+        batch = collection.get(**get_kwargs)
     docs = batch.get("documents") or []
     metas = batch.get("metadatas") or []
     if not docs:
@@ -208,17 +218,17 @@ def retrieve(
     except Exception as exc:
         logger.warning("Semantic search failed, using keyword fallback: %s", exc)
         retrieval_results = _keyword_fallback_retrieve(
-            collection, query, detected_scheme, top_k
+            client, collection_name, query, detected_scheme, top_k
         )
 
     if not retrieval_results:
         logger.info("No semantic hits; trying keyword fallback")
         retrieval_results = _keyword_fallback_retrieve(
-            collection, query, detected_scheme, top_k
+            client, collection_name, query, detected_scheme, top_k
         )
     if not retrieval_results and detected_scheme:
         retrieval_results = _keyword_fallback_retrieve(
-            collection, query, None, top_k
+            client, collection_name, query, None, top_k
         )
 
     return RetrievalResponse(

@@ -115,14 +115,24 @@ def _generate_template_answer(
     
     # Expense ratio query
     if 'expense' in query_lower or 'ratio' in query_lower:
-        for i, line in enumerate(lines):
-            if 'expense ratio' in line.lower():
-                # Next line should have the value
-                if i + 1 < len(lines):
-                    value = lines[i + 1].strip()
-                    if value and any(c.isdigit() for c in value):
-                        answer_text = f"The expense ratio is {value}."
-                        break
+        import re as _re
+        for line in lines:
+            match = _re.search(
+                r"expense\s+ratio[^\d]*(\d+(?:\.\d+)?%)",
+                line,
+                _re.IGNORECASE,
+            )
+            if match:
+                answer_text = f"The expense ratio is {match.group(1)}."
+                break
+        if not answer_text:
+            for i, line in enumerate(lines):
+                if 'expense ratio' in line.lower():
+                    if i + 1 < len(lines):
+                        value = lines[i + 1].strip()
+                        if value and any(c.isdigit() for c in value):
+                            answer_text = f"The expense ratio is {value}."
+                            break
     
     # Exit load query
     elif 'exit' in query_lower or 'load' in query_lower:
