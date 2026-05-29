@@ -8,6 +8,7 @@ Implements hybrid retrieval:
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -16,6 +17,17 @@ import chromadb
 from app.config import VECTOR_STORE_DIR
 from app.rag.embedder import get_embedding_function
 from app.rag.scheme_detector import detect_scheme
+
+logger = logging.getLogger(__name__)
+
+_embedding_fn = None
+
+
+def _get_embedding_function():
+    global _embedding_fn
+    if _embedding_fn is None:
+        _embedding_fn = get_embedding_function()
+    return _embedding_fn
 
 
 @dataclass
@@ -46,12 +58,64 @@ def get_chroma_client() -> chromadb.ClientAPI:
 def get_collection(
     client: chromadb.ClientAPI,
     collection_name: str = "hdfc_groww_corpus",
+    *,
+    for_query: bool = False,
 ) -> chromadb.Collection | None:
     """Get existing collection, or None if the index has not been built yet."""
     try:
+        if for_query:
+            return client.get_collection(
+                name=collection_name,
+                embedding_function=_get_embedding_function(),
+            )
         return client.get_collection(name=collection_name)
     except (ValueError, Exception):
         return None
+
+
+def _keyword_fallback_retrieve(
+    collection: chromadb.Collection,
+    query: str,
+    detected_scheme: Optional[str],
+    top_k: int,
+) -> list[RetrievalResult]:
+    """Fallback when embedding-based query fails (e.g. model load on small hosts)."""
+    get_kwargs: dict = {"include": ["documents", "metadatas"]}
+    if detected_scheme:
+        get_kwargs["where"] = {"scheme_id": detected_scheme}
+
+    batch = collection.get(**get_kwargs)
+    docs = batch.get("documents") or []
+    metas = batch.get("metadatas") or []
+    if not docs:
+        return []
+
+    query_terms = [t for t in query.lower().split() if len(t) > 2]
+    scored: list[tuple[float, int]] = []
+    for i, doc in enumerate(docs):
+        if not doc:
+            continue
+        doc_lower = doc.lower()
+        matches = sum(1 for term in query_terms if term in doc_lower)
+        if matches == 0:
+            continue
+        scored.append((matches / max(len(query_terms), 1), i))
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    results: list[RetrievalResult] = []
+    for score, idx in scored[:top_k]:
+        metadata = metas[idx] if idx < len(metas) and metas[idx] else {}
+        results.append(
+            RetrievalResult(
+                chunk_id=metadata.get("chunk_id", f"chunk_{idx}"),
+                text=docs[idx],
+                source_url=metadata.get("source_url", ""),
+                scheme_id=metadata.get("scheme_id", ""),
+                score=score,
+                metadata=metadata,
+            )
+        )
+    return results
 
 
 def rerank_with_keyword_boost(results: dict, query: str) -> dict:
@@ -106,7 +170,7 @@ def retrieve(
     
     # Step 2: Query Chroma
     client = get_chroma_client()
-    collection = get_collection(client, collection_name)
+    collection = get_collection(client, collection_name, for_query=True)
     if collection is None:
         return RetrievalResponse(
             query=query,
@@ -115,38 +179,38 @@ def retrieve(
             total_retrieved=0,
         )
 
-    # Build query parameters
-    query_kwargs = {
-        "query_texts": [query],
-        "n_results": top_k,
-        "include": ["documents", "metadatas", "distances"],
-    }
-    
-    # Add scheme filter if detected
-    if detected_scheme:
-        query_kwargs["where"] = {"scheme_id": detected_scheme}
-    
-    # Execute query
-    results = collection.query(**query_kwargs)
-    
-    # Step 3: Keyword reranking
-    results = rerank_with_keyword_boost(results, query)
-    
-    # Step 4: Build response
-    retrieval_results = []
-    if results["documents"] and results["documents"][0]:
-        for i in range(len(results["documents"][0])):
-            metadata = results["metadatas"][0][i] if results["metadatas"] else {}
-            
-            retrieval_results.append(RetrievalResult(
-                chunk_id=metadata.get("chunk_id", f"chunk_{i}"),
-                text=results["documents"][0][i],
-                source_url=metadata.get("source_url", ""),
-                scheme_id=metadata.get("scheme_id", ""),
-                score=1.0 - results["distances"][0][i] if results["distances"] else 0.0,
-                metadata=metadata,
-            ))
-    
+    retrieval_results: list[RetrievalResult] = []
+    try:
+        query_kwargs = {
+            "query_texts": [query],
+            "n_results": top_k,
+            "include": ["documents", "metadatas", "distances"],
+        }
+        if detected_scheme:
+            query_kwargs["where"] = {"scheme_id": detected_scheme}
+
+        results = collection.query(**query_kwargs)
+        results = rerank_with_keyword_boost(results, query)
+
+        if results["documents"] and results["documents"][0]:
+            for i in range(len(results["documents"][0])):
+                metadata = results["metadatas"][0][i] if results["metadatas"] else {}
+                retrieval_results.append(
+                    RetrievalResult(
+                        chunk_id=metadata.get("chunk_id", f"chunk_{i}"),
+                        text=results["documents"][0][i],
+                        source_url=metadata.get("source_url", ""),
+                        scheme_id=metadata.get("scheme_id", ""),
+                        score=1.0 - results["distances"][0][i] if results["distances"] else 0.0,
+                        metadata=metadata,
+                    )
+                )
+    except Exception as exc:
+        logger.warning("Semantic search failed, using keyword fallback: %s", exc)
+        retrieval_results = _keyword_fallback_retrieve(
+            collection, query, detected_scheme, top_k
+        )
+
     return RetrievalResponse(
         query=query,
         detected_scheme=detected_scheme,
