@@ -31,3 +31,4 @@ ingestion/raw/*.html
 
 # Build
 .vercel-tmp/
+.vercel
