@@ -894,6 +894,12 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query })
                 });
+
+                // Check if response is JSON before parsing
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    throw new Error('Backend is not responding. The Render service may be starting up — please wait 30-60 seconds and try again.');
+                }
                 
                 const data = await response.json();
                 document.getElementById('loadingRow').remove();
@@ -905,10 +911,11 @@
                 appendBotMessage(data);
 
             } catch(error) {
-                document.getElementById('loadingRow').remove();
+                const loadingEl = document.getElementById('loadingRow');
+                if (loadingEl) loadingEl.remove();
                 appendBotMessage({
                     type: 'error',
-                    text: error.message || 'An error occurred while fetching the answer.',
+                    text: error.message || 'Could not reach the backend. Please try again in a moment.',
                     refused: true
                 });
             } finally {
