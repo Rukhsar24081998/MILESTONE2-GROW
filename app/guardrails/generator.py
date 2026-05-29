@@ -10,6 +10,7 @@ Orchestrates the full query flow:
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from typing import Optional
 import logging
@@ -115,12 +116,11 @@ def _generate_template_answer(
     
     # Expense ratio query
     if 'expense' in query_lower or 'ratio' in query_lower:
-        import re as _re
         for line in lines:
-            match = _re.search(
+            match = re.search(
                 r"expense\s+ratio[^\d]*(\d+(?:\.\d+)?%)",
                 line,
-                _re.IGNORECASE,
+                re.IGNORECASE,
             )
             if match:
                 answer_text = f"The expense ratio is {match.group(1)}."
