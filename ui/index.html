@@ -745,13 +745,13 @@
 
         // Backend API URL - Update this when deploying to production
         // Local: 'http://localhost:8000'
-        // Production: 'https://milestone2-grow.onrender.com'
+        // Production: 'https://milestone2-grow-backend.onrender.com'
         const API_BASE = (() => {
             const meta = document.querySelector('meta[name="api-base"]');
             if (meta && meta.content) return meta.content.replace(/\/$/, '');
             return window.location.hostname === 'localhost'
                 ? 'http://localhost:8000'
-                : 'https://milestone2-grow.onrender.com';
+                : 'https://milestone2-grow-backend.onrender.com';
         })();
         let isChatActive = false;
 
