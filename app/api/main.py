@@ -136,6 +136,8 @@ class HealthResponse(BaseModel):
     timestamp: str
     version: str
     index: str = "unknown"
+    build: str = "unknown"
+    chunks_on_disk: int = 0
 
 
 class CorpusStatusResponse(BaseModel):
@@ -231,11 +233,16 @@ async def health_check():
     except Exception:
         index_status = "error"
 
+    chunks_dir = PROJECT_ROOT / "ingestion" / "chunks"
+    chunks_on_disk = len(list(chunks_dir.glob("*.jsonl"))) if chunks_dir.is_dir() else 0
+
     return {
         "status": "ok",
         "timestamp": datetime.now().isoformat(),
         "version": "1.0.0",
         "index": index_status,
+        "build": "a8b57a8",
+        "chunks_on_disk": chunks_on_disk,
     }
 
 
