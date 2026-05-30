@@ -16,4 +16,4 @@ Edge-case catalogs for each implementation phase of the [Mutual Fund FAQ Assista
 
 - **Severity:** `P0` (blocker), `P1` (must handle), `P2` (should handle), `P3` (document/limitation)
 - **ID format:** `P{n}-EC-{nn}` (phase number + edge-case number)
-- **Closed corpus:** Only the [five Groww URLs](../phase-wise-architecture.md#closed-corpus--corpusmanifestyaml-authoritative-allowlist) are valid for ingestion and citations.
+- **Closed corpus:** Only the [twenty Groww URLs](../phase-wise-architecture.md#closed-corpus--corpusmanifestyaml-authoritative-allowlist) are valid for ingestion and citations.

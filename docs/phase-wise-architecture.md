@@ -934,14 +934,14 @@ stateDiagram-v2
 |-------------------|-------------------|
 | Accurate factual retrieval | 15–20 query golden set; human review |
 | Facts-only adherence | Advisory/comparison set → 100% refusal |
-| Valid citations | Automated check: `citation_url` ∈ five URL allowlist |
+| Valid citations | Automated check: `citation_url` ∈ twenty URL allowlist |
 | Proper refusals | Template + allowlisted Groww link present |
 | Clean minimal UI | UX checklist (disclaimer, examples, footer) |
 
 **Deliverables:**
 
 - `tests/golden_queries.json`
-- Known limitations section in README (closed 5-URL corpus only, Groww data freshness, scheme name ambiguity, English only)
+- Known limitations section in README (closed 20-URL corpus only, Groww data freshness, scheme name ambiguity, English only)
 
 ---
 
@@ -950,7 +950,7 @@ stateDiagram-v2
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/health` | Liveness |
-| `GET` | `/corpus/status` | Document count (expect **5**), allowlist version, last ingest date |
+| `GET` | `/corpus/status` | Document count (expect **20**), allowlist version, last ingest date |
 | `POST` | `/ask` | Main Q&A endpoint |
 | `GET` | `/examples` | Returns 3 example questions for UI |
 

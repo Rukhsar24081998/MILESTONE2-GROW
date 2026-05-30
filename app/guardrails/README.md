@@ -4,4 +4,4 @@
 |-------|----------------|
 | 3 | Query classifier, PII filter, output validator, refusal templates |
 
-Citation must be one of the five URLs from `corpus/manifest.yaml`.
+Citation must be one of the twenty URLs from `corpus/manifest.yaml`.

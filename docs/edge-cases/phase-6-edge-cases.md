@@ -10,8 +10,8 @@
 | ID | Severity | Scenario | Expected behavior |
 |----|----------|----------|-------------------|
 | P6-EC-01 | P0 | Golden factual answer cites non-allowlisted URL | Automated test **fails** |
-| P6-EC-02 | P1 | Golden set includes ELSS lock-in query | Remove or mark `expected: refusal` — ELSS not in corpus |
-| P6-EC-03 | P1 | Golden set references sixth HDFC scheme | Restrict to five documented schemes only |
+| P6-EC-02 | P1 | Golden set includes ELSS lock-in query | Remove or mark `expected: refusal` — ELSS included in corpus (NJ ELSS Tax Saver) |
+| P6-EC-03 | P1 | Golden set references twenty-first scheme | Restrict to twenty documented schemes only |
 | P6-EC-04 | P2 | Expected expense ratio hardcoded; Groww page changed | Prefer structure checks (URL, footer, ≤3 sentences) over exact % |
 | P6-EC-05 | P2 | Duplicate golden queries differing only by punctuation | Normalize before hash/compare |
 
@@ -83,7 +83,7 @@
 
 | ID | Severity | Scenario | Expected behavior |
 |----|----------|----------|-------------------|
-| P6-EC-26 | P2 | Reviewer expects AMFI citation per problem statement | README limitation: project uses **5 Groww URLs only** |
+| P6-EC-26 | P2 | Reviewer expects AMFI citation per problem statement | README limitation: project uses **20 Groww URLs only** |
 | P6-EC-27 | P2 | “Statement download” factual query in golden set | Expect low confidence or refusal — likely not on Groww pages |
 | P6-EC-28 | P1 | Success criteria met but PII logged in Phase 5 | Block sign-off until logging edge cases pass |
 
@@ -101,12 +101,12 @@
 
 ## Phase 6 test checklist
 
-- [ ] `golden_queries.json` covers all 5 schemes at least once
+- [ ] `golden_queries.json` covers all 20 schemes at least once
 - [ ] Automated: 100% refusals on advisory set
 - [ ] Automated: 100% `citation_url ∈ allowlist`
 - [ ] Automated: sentence count ≤3 for answers
 - [ ] Retrieval golden ≥80% (or documented waiver)
-- [ ] README known limitations: 5-URL corpus, Groww freshness, no ELSS
+- [ ] README known limitations: 20-URL corpus, Groww freshness, ELSS included
 - [ ] Manual UI checklist completed (disclaimer, examples, footer, refusal UX)
 
 ---

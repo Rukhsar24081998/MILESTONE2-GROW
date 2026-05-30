@@ -1,6 +1,6 @@
 # Mutual Fund FAQ Assistant
 
-Facts-only Q&A assistant for HDFC mutual fund schemes, using a **closed corpus of five Groww scheme pages**. Built with a lightweight RAG architecture ([docs/phase-wise-architecture.md](docs/phase-wise-architecture.md)).
+Facts-only Q&A assistant for mutual fund schemes from multiple AMCs, using a **closed corpus of twenty Groww scheme pages**. Built with a lightweight RAG architecture ([docs/phase-wise-architecture.md](docs/phase-wise-architecture.md)).
 
 **Disclaimer:** Facts-only. No investment advice.
 
@@ -10,8 +10,8 @@ Facts-only Q&A assistant for HDFC mutual fund schemes, using a **closed corpus o
 
 | Item | Value |
 |------|--------|
-| **AMC** | HDFC Mutual Fund ([hdfcfund.com](http://www.hdfcfund.com) — metadata only, **not** in corpus) |
-| **Corpus** | Exactly **5** Groww URLs — no AMC, AMFI, SEBI, or other pages |
+| **AMCs** | HDFC, NJ, Nippon India, Motilal Oswal, Groww, Bajaj Finserv, ICICI Prudential (metadata only, **not** in corpus) |
+| **Corpus** | Exactly **20** Groww URLs — no AMC, AMFI, SEBI, or other pages |
 | **Product context** | Groww-style fund facts (expense ratio, exit load, SIP minimum, benchmark, etc.) |
 
 ### Schemes in corpus
@@ -23,15 +23,30 @@ Facts-only Q&A assistant for HDFC mutual fund schemes, using a **closed corpus o
 | HDFC Small Cap Fund Direct Growth | Equity — Small Cap | [Groww](https://groww.in/mutual-funds/hdfc-small-cap-fund-direct-growth) |
 | HDFC Defence Fund Direct Growth | Equity — Thematic | [Groww](https://groww.in/mutual-funds/hdfc-defence-fund-direct-growth) |
 | HDFC Silver ETF FoF Direct Growth | Commodities — Silver FoF | [Groww](https://groww.in/mutual-funds/hdfc-silver-etf-fof-direct-growth) |
+| NJ Flexi Cap Fund Direct Growth | Equity — Flexi Cap | [Groww](https://groww.in/mutual-funds/nj-flexi-cap-fund-direct-growth) |
+| NJ ELSS Tax Saver Scheme Direct Growth | Equity — ELSS | [Groww](https://groww.in/mutual-funds/nj-elss-tax-saver-scheme-direct-growth) |
+| Nippon India Small Cap Fund Direct Growth | Equity — Small Cap | [Groww](https://groww.in/mutual-funds/nippon-india-small-cap-fund-direct-growth) |
+| Nippon India Large Cap Fund Direct Growth | Equity — Large Cap | [Groww](https://groww.in/mutual-funds/nippon-india-large-cap-fund-direct-growth) |
+| Nippon India Growth Mid Cap Fund Direct Growth | Equity — Mid Cap | [Groww](https://groww.in/mutual-funds/nippon-india-growth-mid-cap-fund-direct-growth) |
+| Motilal Oswal Most Focused Midcap 30 Fund Direct Growth | Equity — Mid Cap | [Groww](https://groww.in/mutual-funds/motilal-oswal-most-focused-midcap-30-fund-direct-growth) |
+| Motilal Oswal Large and Midcap Fund Direct Growth | Equity — Large & Mid Cap | [Groww](https://groww.in/mutual-funds/motilal-oswal-large-and-midcap-fund-direct-growth) |
+| Motilal Oswal Small Cap Fund Direct Growth | Equity — Small Cap | [Groww](https://groww.in/mutual-funds/motilal-oswal-small-cap-fund-direct-growth) |
+| Groww Gold ETF FoF Direct Growth | Commodities — Gold FoF | [Groww](https://groww.in/mutual-funds/groww-gold-etf-fof-direct-growth) |
+| Groww Small Cap Fund Direct Growth | Equity — Small Cap | [Groww](https://groww.in/mutual-funds/groww-small-cap-fund-direct-growth) |
+| Groww Multicap Fund Direct Growth | Equity — Multi Cap | [Groww](https://groww.in/mutual-funds/groww-multicap-fund-direct-growth) |
+| Bajaj Finserv Small Cap Fund Direct Growth | Equity — Small Cap | [Groww](https://groww.in/mutual-funds/bajaj-finserv-small-cap-fund-direct-growth) |
+| Bajaj Finserv Flexi Cap Fund Direct Growth | Equity — Flexi Cap | [Groww](https://groww.in/mutual-funds/bajaj-finserv-flexi-cap-fund-direct-growth) |
+| Bajaj Finserv Large and Mid Cap Fund Direct Growth | Equity — Large & Mid Cap | [Groww](https://groww.in/mutual-funds/bajaj-finserv-large-and-mid-cap-fund-direct-growth) |
+| ICICI Prudential Top 100 Fund Direct Growth | Equity — Large & Mid Cap | [Groww](https://groww.in/mutual-funds/icici-prudential-top-100-fund-direct-growth) |
 
 **Note:** The Flexi Cap scheme uses the Groww slug `hdfc-equity-fund-direct-growth`; alias **HDFC Equity Fund** is registered in `corpus/schemes.json`.
 
 ### Closed-corpus policy
 
 - **Ingestion** may fetch only URLs listed in `corpus/manifest.yaml`.
-- **Citations** in every answer or refusal must be one of those five URLs.
+- **Citations** in every answer or refusal must be one of those twenty URLs.
 - **Default refusal citation:** Flexi Cap Groww page (`hdfc-equity-fund-direct-growth`).
-- This project **does not** use the problem statement’s “15–25 official URLs” model; scope is intentionally limited to these five pages.
+- This project **does not** use the problem statement’s “15–25 official URLs” model; scope is intentionally limited to these twenty pages.
 
 ---
 
@@ -103,7 +118,7 @@ cp .env.example .env
 Lightweight **RAG** pipeline:
 
 1. Classify query (factual vs advisory vs performance).
-2. Retrieve chunks from the five-page corpus only.
+2. Retrieve chunks from the twenty-page corpus only.
 3. Generate ≤3 sentences with **one** allowlisted citation and footer date.
 4. Refuse advice, comparisons, and PII-related queries.
 
@@ -114,7 +129,7 @@ Edge cases: [docs/edge-cases/](docs/edge-cases/README.md)
 
 ## Known limitations (project scope)
 
-- No ELSS or large-cap scheme in the five-URL corpus.
+- Corpus includes diverse categories: mid-cap, flexi-cap, small-cap, large-cap, thematic, commodities (FoF), ELSS, multi-cap.
 - Facts come from Groww pages only; not verified against AMC factsheets in this milestone.
 - English queries only (best effort).
 - Groww HTML/layout changes may require re-ingestion (Phase 1).

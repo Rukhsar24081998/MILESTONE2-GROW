@@ -78,4 +78,4 @@
 - [ ] Alias `HDFC Equity Fund` filters Flexi Cap URL only
 - [ ] Unknown scheme query sets `low_confidence` or irrelevant scores
 - [ ] Token cap never exceeded in assembled context
-- [ ] Every chunk in context has `source_url` ∈ five URL allowlist
+- [ ] Every chunk in context has `source_url` ∈ twenty URL allowlist
