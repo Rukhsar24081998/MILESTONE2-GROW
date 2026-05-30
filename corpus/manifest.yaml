@@ -1,5 +1,10 @@
 corpus_version: "2.0"
 policy: closed_allowlist
+
+citation_rules:
+  factual: "Use the Groww URL of the scheme referenced in the query"
+  refusal_default_scheme_id: "hdfc-flexi-cap-direct-growth"
+
 allowed_urls:
   # HDFC schemes (original 5)
   - url: https://groww.in/mutual-funds/hdfc-mid-cap-fund-direct-growth
