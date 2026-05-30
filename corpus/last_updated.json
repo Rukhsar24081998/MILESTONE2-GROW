@@ -1,7 +1,7 @@
 {
-  "corpus_version": "1.0",
+  "corpus_version": "2.0",
   "note": "Populated after Phase 1 ingestion. Footer dates use per-scheme or max(fetched_at).",
-  "latest_fetched_at": "2026-05-29T11:03:58Z",
+  "latest_fetched_at": "2026-05-30T07:47:07Z",
   "schemes": {
     "hdfc-mid-cap-direct-growth": {
       "source_url": "https://groww.in/mutual-funds/hdfc-mid-cap-fund-direct-growth",
@@ -22,6 +22,66 @@
     "hdfc-silver-etf-fof-direct-growth": {
       "source_url": "https://groww.in/mutual-funds/hdfc-silver-etf-fof-direct-growth",
       "fetched_at": "2026-05-29T11:03:58Z"
+    },
+    "nj-flexi-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/nj-flexi-cap-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:02Z"
+    },
+    "nj-elss-tax-saver-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/nj-elss-tax-saver-scheme-direct-growth",
+      "fetched_at": "2026-05-30T07:47:02Z"
+    },
+    "nippon-india-small-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/nippon-india-small-cap-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:02Z"
+    },
+    "nippon-india-large-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/nippon-india-large-cap-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:02Z"
+    },
+    "nippon-india-growth-mid-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/nippon-india-growth-mid-cap-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:03Z"
+    },
+    "motilal-oswal-midcap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/motilal-oswal-most-focused-midcap-30-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:03Z"
+    },
+    "motilal-oswal-large-midcap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/motilal-oswal-large-and-midcap-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:03Z"
+    },
+    "motilal-oswal-small-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/motilal-oswal-small-cap-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:04Z"
+    },
+    "groww-gold-etf-fof-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/groww-gold-etf-fof-direct-growth",
+      "fetched_at": "2026-05-30T07:47:05Z"
+    },
+    "groww-small-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/groww-small-cap-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:06Z"
+    },
+    "groww-multicap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/groww-multicap-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:06Z"
+    },
+    "bajaj-finserv-small-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/bajaj-finserv-small-cap-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:06Z"
+    },
+    "bajaj-finserv-flexi-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/bajaj-finserv-flexi-cap-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:06Z"
+    },
+    "bajaj-finserv-large-mid-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/bajaj-finserv-large-and-mid-cap-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:07Z"
+    },
+    "icici-prudential-large-mid-cap-direct-growth": {
+      "source_url": "https://groww.in/mutual-funds/icici-prudential-top-100-fund-direct-growth",
+      "fetched_at": "2026-05-30T07:47:07Z"
     }
   }
 }
