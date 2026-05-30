@@ -10,7 +10,10 @@ from __future__ import annotations
 
 import re
 from enum import Enum
+from functools import lru_cache
 from typing import Optional
+
+from app.corpus import load_schemes
 
 
 class QueryCategory(str, Enum):
@@ -46,6 +49,31 @@ FACTUAL_KEYWORDS = [
     "holding", "portfolio", "sector", "investment objective"
 ]
 
+# Generic fund/category terms when no exact scheme name appears in the query.
+_GENERIC_SCHEME_TERMS = (
+    "mid cap", "midcap", "small cap", "smallcap", "large cap", "largecap",
+    "flexi cap", "flexicap", "large midcap", "large and midcap", "multicap",
+    "defence", "silver", "gold", "etf", "fof", "elss", "tax saver",
+    "fund", "scheme",
+)
+
+
+@lru_cache(maxsize=1)
+def _scheme_mention_phrases() -> tuple[str, ...]:
+    """Scheme names, aliases, and generic category terms for factual routing."""
+    phrases: set[str] = set(_GENERIC_SCHEME_TERMS)
+    for scheme in load_schemes().schemes:
+        phrases.add(scheme.name.strip().lower())
+        for alias in scheme.aliases:
+            normalized = alias.strip().lower()
+            if normalized:
+                phrases.add(normalized)
+    return tuple(sorted(phrases, key=len, reverse=True))
+
+
+def _has_scheme_mention(query_lower: str) -> bool:
+    return any(phrase in query_lower for phrase in _scheme_mention_phrases())
+
 
 def classify_query(query: str) -> tuple[QueryCategory, Optional[str]]:
     """Classify a query into category with reason.
@@ -70,12 +98,7 @@ def classify_query(query: str) -> tuple[QueryCategory, Optional[str]]:
     
     # Check if it's a factual query about mutual funds
     has_factual_keyword = any(kw in query_lower for kw in FACTUAL_KEYWORDS)
-    
-    # Must mention a scheme or fund to be factual
-    has_scheme_mention = any(kw in query_lower for kw in [
-        "mid cap", "midcap", "small cap", "smallcap", "flexi cap", 
-        "flexicap", "defence", "silver", "etf", "fund", "scheme"
-    ])
+    has_scheme_mention = _has_scheme_mention(query_lower)
     
     if has_factual_keyword and has_scheme_mention:
         return QueryCategory.FACTUAL, "factual_query_about_scheme"

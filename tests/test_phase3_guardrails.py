@@ -19,7 +19,7 @@ from app.guardrails.validator import (
     count_urls,
     contains_banned_phrases,
 )
-from app.guardrails.generator import process_query
+from app.guardrails.generator import process_query, _extract_exit_load_answer
 from app.rag.llm import HAS_GROQ
 
 
@@ -58,6 +58,12 @@ OUT_OF_SCOPE_QUERIES = [
     "What are stock market tips for intraday?",
 ]
 
+NON_HDFC_FACTUAL_QUERIES = [
+    ("What is the expense ratio of Nippon India Large Cap?", "nippon-india-large-cap-direct-growth"),
+    ("What is the exit load for Motilal Oswal Small Cap?", "motilal-oswal-small-cap-direct-growth"),
+    ("What is the minimum SIP for Bajaj Finserv Flexi Cap?", "bajaj-finserv-flexi-cap-direct-growth"),
+]
+
 
 # ============================================================
 # Classifier Tests
@@ -85,6 +91,13 @@ class TestQueryClassifier:
             category, reason = classify_query(query)
             assert category == QueryCategory.OUT_OF_SCOPE, (
                 f"Query '{query}' should be OUT_OF_SCOPE, got {category}"
+            )
+
+    def test_non_hdfc_factual_classification(self):
+        for query, _ in NON_HDFC_FACTUAL_QUERIES:
+            category, reason = classify_query(query)
+            assert category == QueryCategory.FACTUAL, (
+                f"Query '{query}' should be FACTUAL, got {category}"
             )
 
 
@@ -349,6 +362,35 @@ class TestExitCriteria:
                 assert sentence_count <= 3, (
                     f"Query '{query}' has {sentence_count} sentences (max 3)"
                 )
+
+
+# ============================================================
+# Exit Load Extraction Tests
+# ============================================================
+
+class TestExitLoadExtraction:
+    """Exit load answers must be a single sentence (≤3) even from multi-sentence chunks."""
+
+    def test_extracts_sentence_from_about_paragraph(self):
+        context = (
+            "The HDFC Silver ETF FoF Direct Growth is rated Very High risk. "
+            "Minimum SIP Investment is set to ₹100. Minimum Lumpsum Investment is ₹100. "
+            "Exit load of 1%, if redeemed within 15 days."
+        )
+        answer = _extract_exit_load_answer(context)
+        assert answer == "Exit load of 1%, if redeemed within 15 days."
+        assert count_sentences(answer) == 1
+
+    def test_extracts_standalone_exit_load_line(self):
+        context = "Exit load of 1% if redeemed within 1 year"
+        answer = _extract_exit_load_answer(context)
+        assert answer == "Exit load of 1% if redeemed within 1 year."
+        assert count_sentences(answer) == 1
+
+    def test_extracts_nil_exit_load(self):
+        context = "Exit load\nNil\nStamp duty on investment"
+        answer = _extract_exit_load_answer(context)
+        assert answer == "Exit load is Nil."
 
 
 # ============================================================

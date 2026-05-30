@@ -24,6 +24,50 @@ from app.rag.context_assembler import assemble_context, get_citation_url
 
 logger = logging.getLogger(__name__)
 
+_EXIT_LOAD_SENTENCE = re.compile(
+    r"exit load[^.\n]*?(?:redeemed|within)[^.\n]*",
+    re.IGNORECASE,
+)
+_EXIT_LOAD_NIL = re.compile(
+    r"exit load\s*(?:\([^)]*\))?\s*:?\s*\n\s*(nil|none|0%|not applicable)",
+    re.IGNORECASE,
+)
+
+
+def _extract_exit_load_answer(context: str) -> Optional[str]:
+    """Extract one exit-load sentence from retrieved context."""
+    if _EXIT_LOAD_NIL.search(context):
+        return "Exit load is Nil."
+
+    for line in context.split("\n"):
+        stripped = line.strip()
+        if not stripped or stripped.startswith(("[Scheme:", "Query:", "--- Chunk")):
+            continue
+        lower = stripped.lower()
+        if "exit load" not in lower:
+            continue
+        if "redeemed" in lower or "within" in lower:
+            for sentence in re.split(r"(?<=[.!?])\s+", stripped):
+                sentence = sentence.strip()
+                s_lower = sentence.lower()
+                if "exit load" in s_lower and ("redeemed" in s_lower or "within" in s_lower):
+                    if not sentence.endswith("."):
+                        sentence += "."
+                    return sentence
+            if len(stripped) < 120:
+                if not stripped.endswith("."):
+                    stripped += "."
+                return stripped
+
+    match = _EXIT_LOAD_SENTENCE.search(context)
+    if match:
+        answer = match.group(0).strip()
+        if not answer.endswith("."):
+            answer += "."
+        return answer
+
+    return None
+
 
 def get_footer_date() -> str:
     """Get footer date from corpus metadata or current date."""
@@ -136,13 +180,7 @@ def _generate_template_answer(
     
     # Exit load query
     elif 'exit' in query_lower or 'load' in query_lower:
-        for i, line in enumerate(lines):
-            if 'exit load' in line.lower() and ('redeemed' in line.lower() or 'within' in line.lower()):
-                # Extract the exit load info
-                answer_text = line.strip()
-                if not answer_text.endswith('.'):
-                    answer_text += '.'
-                break
+        answer_text = _extract_exit_load_answer(context)
     
     # SIP minimum query
     elif 'sip' in query_lower or 'minimum' in query_lower:
@@ -352,10 +390,19 @@ def process_query(query: str, top_k: int = 3) -> dict:
         footer_date=footer_date,
     )
     
-    # Step 6: Validate
+    # Step 6: Validate (retry template if LLM answer fails validation)
     is_valid, errors = validate_response(answer)
     if not is_valid:
-        # Fallback to safe refusal
+        logger.warning("Answer validation failed (%s), retrying with template", errors)
+        template_answer = _generate_template_answer(
+            query=query,
+            context=context,
+            citation_url=citation_url,
+            footer_date=footer_date,
+        )
+        is_valid, errors = validate_response(template_answer)
+        if is_valid:
+            return template_answer
         return create_refusal_response(
             reason="answer_not_found",
             footer_date=footer_date,
