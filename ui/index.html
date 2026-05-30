@@ -152,6 +152,15 @@
         .top-bar-title {
             font-size: 18px;
             font-weight: 600;
+            color: var(--on-surface);
+        }
+
+        .top-bar-title .brand-accent {
+            color: var(--primary-container);
+        }
+
+        .top-bar-title .brand-title-muted {
+            color: var(--on-surface);
         }
 
         .badge {
@@ -232,6 +241,15 @@
             font-weight: 700;
             margin-bottom: 16px;
             letter-spacing: -0.02em;
+            color: var(--on-surface);
+        }
+
+        .welcome-title .brand-accent {
+            color: var(--primary-container);
+        }
+
+        .welcome-title .brand-title-muted {
+            color: var(--on-surface);
         }
 
         .welcome-subtitle {
@@ -613,7 +631,7 @@
     <div class="main-content">
         <div class="top-bar">
             <div class="top-bar-left">
-                <div class="top-bar-title">Groww RAG Chatbot</div>
+                <div class="top-bar-title"><span class="brand-accent">Groww RAG</span> <span class="brand-title-muted">Chatbot</span></div>
                 <div class="badge">
                     <div class="status-dot"></div> Index: Healthy
                 </div>
@@ -636,7 +654,7 @@
                     <div class="logo-box">
                         <i data-lucide="sparkles" width="32" height="32"></i>
                     </div>
-                    <h1 class="welcome-title">Groww RAG: Facts-Only Mutual Fund Assistant</h1>
+                    <h1 class="welcome-title"><span class="brand-accent">Groww RAG</span><span class="brand-title-muted">: Facts-Only Mutual Fund Assistant</span></h1>
                     <p class="welcome-subtitle">
                         A facts-only mutual fund assistant that provides concise answers with citations from verified sources.
                     </p>
