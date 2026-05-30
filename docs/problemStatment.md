@@ -13,10 +13,10 @@ Target Users
 ● Customer support and content teams handling repetitive mutual fund queries
 Scope of Work
 1. Corpus Definition
-● Select one Asset Management Company (AMC)
-● Choose 3–5 mutual fund schemes, ensuring category diversity (e.g., large-cap,
-flexi-cap, ELSS)
-● Collect 15–25 official public URLs, including:
+● Select multiple Asset Management Companies (AMCs)
+● Choose 20 mutual fund schemes, ensuring category diversity (e.g., large-cap,
+flexi-cap, ELSS, small-cap, mid-cap, thematic)
+● Collect 20 official public URLs from Groww, including:
 ○ Scheme factsheets
 ○ KIM (Key Information Memorandum)
 ○ SID (Scheme Information Document)

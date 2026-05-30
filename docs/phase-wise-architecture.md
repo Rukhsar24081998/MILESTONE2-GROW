@@ -9,19 +9,19 @@
 
 ## 1. Executive Summary
 
-This document defines a **phase-wise technical architecture** for a facts-only mutual fund FAQ assistant. The system answers objective, verifiable questions by retrieving content from a **closed corpus of exactly five Groww scheme pages** (listed in Phase 0) and generating **short, citation-backed responses**. It explicitly refuses advisory or comparative queries and never collects sensitive personal data.
+This document defines a **phase-wise technical architecture** for a facts-only mutual fund FAQ assistant. The system answers objective, verifiable questions by retrieving content from a **closed corpus of exactly twenty Groww scheme pages** (listed in Phase 0) and generating **short, citation-backed responses**. It explicitly refuses advisory or comparative queries and never collects sensitive personal data.
 
-**Corpus policy (this project):** No other URLs are ingested, indexed, or cited — not AMC factsheets, AMFI, SEBI, or additional Groww pages. Every answer and refusal must use **one URL from this fixed set of five**.
+**Corpus policy (this project):** No other URLs are ingested, indexed, or cited — not AMC factsheets, AMFI, SEBI, or additional Groww pages. Every answer and refusal must use **one URL from this fixed set of twenty**.
 
 Design principles:
 
 | Principle | Implementation |
 |-----------|----------------|
-| Facts-only | Retrieval from the 5-page Groww corpus + prompt/guardrail layer |
-| Source transparency | Exactly one citation URL per answer — **must be one of the five allowlisted Groww URLs** |
+| Facts-only | Retrieval from the 20-page Groww corpus + prompt/guardrail layer |
+| Source transparency | Exactly one citation URL per answer — **must be one of the twenty allowlisted Groww URLs** |
 | Closed corpus | Ingestion fetcher rejects any URL not in `corpus/manifest.yaml` |
 | Compliance | Refusal templates, no performance math, no advice |
-| Lightweight | HDFC AMC (context), 5 schemes, **5 corpus URLs total**, minimal UI |
+| Lightweight | Multiple AMCs (HDFC, NJ, Nippon India, Motilal Oswal, Groww, Bajaj Finserv, ICICI Prudential), 20 schemes, **20 corpus URLs total**, minimal UI |
 | Privacy | Stateless Q&A; no PAN/Aadhaar/account/OTP/email/phone |
 
 ---
@@ -65,8 +65,8 @@ flowchart TB
         IDX[Index Builder]
     end
 
-    subgraph Sources["Corpus Sources closed 5 URLs"]
-        GROWW[5 Groww HDFC scheme pages only]
+    subgraph Sources["Corpus Sources closed 20 URLs"]
+        GROWW[20 Groww scheme pages from multiple AMCs]
     end
 
     UI --> GW
@@ -111,11 +111,11 @@ flowchart TB
 ### 3.1 Corpus Model
 
 ```
-AMC: HDFC Mutual Fund (metadata only)
- └── Schemes (5, diverse categories)
-      └── Documents (exactly 5 URLs — no others)
+Multiple AMCs: HDFC, NJ, Nippon India, Motilal Oswal, Groww, Bajaj Finserv, ICICI Prudential
+ └── Schemes (20, diverse categories)
+      └── Documents (exactly 20 URLs — no others)
            ├── type: groww_scheme_page
-           ├── source_url (one of the five allowlisted Groww URLs)
+           ├── source_url (one of the twenty allowlisted Groww URLs)
            ├── scheme_id
            ├── fetched_at
            └── content_hash
@@ -155,7 +155,7 @@ Each indexed chunk stores:
 {
   "type": "answer",
   "text": "≤3 sentences with embedded or trailing single URL",
-  "citation_url": "https://groww.in/mutual-funds/<one-of-five-allowlisted-slugs>",
+  "citation_url": "https://groww.in/mutual-funds/<one-of-twenty-allowlisted-slugs>",
   "footer": "Last updated from sources: 2026-05-20",
   "refused": false
 }
@@ -238,7 +238,7 @@ sequenceDiagram
 flowchart LR
     subgraph Allowed
         Q[User question text]
-        R[5 Groww URLs only]
+        R[20 Groww URLs only]
     end
 
     subgraph Blocked
@@ -260,7 +260,7 @@ flowchart LR
 |---------|--------|
 | **No PII storage** | Do not persist queries containing PAN/Aadhaar/account/OTP/contact patterns |
 | **Stateless API** | No user accounts; optional ephemeral `session_id` not required |
-| **Source allowlist** | **Exactly 5 Groww URLs** in `corpus/manifest.yaml`; fetcher and citation validator reject all others |
+| **Source allowlist** | **Exactly 20 Groww URLs** in `corpus/manifest.yaml`; fetcher and citation validator reject all others |
 | **Audit trail** | Log query category + citation URL (not raw PII); optional for debugging |
 | **Disclaimer** | UI + README: "Facts-only. No investment advice." |
 
@@ -320,15 +320,15 @@ LLM_MAX_TOKENS=300   # Limit response length
 
 | Task | Deliverable |
 |------|-------------|
-| Select 1 AMC | **HDFC Mutual Fund** — documented in README |
-| Select 3–5 schemes (category diversity) | **5 schemes** — table below → `corpus/schemes.json` |
-| Lock corpus URLs (5 only) | `corpus/manifest.yaml` — **only** the five Groww URLs below; no additional sources |
+| Select multiple AMCs | **HDFC, NJ, Nippon India, Motilal Oswal, Groww, Bajaj Finserv, ICICI Prudential** — documented in README |
+| Select 20 schemes (category diversity) | **20 schemes** — table below → `corpus/schemes.json` |
+| Lock corpus URLs (20 only) | `corpus/manifest.yaml` — **only** the twenty Groww URLs below; no additional sources |
 | Architecture sign-off | This document + README skeleton |
 
 #### Locked project scope (AMC + schemes)
 
-**AMC (metadata only, not a corpus URL):** [HDFC Mutual Fund](http://www.hdfcfund.com)  
-**Corpus (ingestion + citations):** Only the five [Groww](https://groww.in) scheme pages in the table below — **no other URLs**
+**AMCs (metadata only, not corpus URLs):** HDFC Mutual Fund, NJ Mutual Fund, Nippon India Mutual Fund, Motilal Oswal Mutual Fund, Groww Mutual Fund, Bajaj Finserv Mutual Fund, ICICI Prudential Mutual Fund
+**Corpus (ingestion + citations):** Only the twenty [Groww](https://groww.in) scheme pages in the table below — **no other URLs**
 
 | # | Scheme name | Category | Groww reference URL |
 |---|-------------|----------|---------------------|
@@ -337,8 +337,23 @@ LLM_MAX_TOKENS=300   # Limit response length
 | 3 | HDFC Small Cap Fund Direct Growth | Equity — Small Cap | https://groww.in/mutual-funds/hdfc-small-cap-fund-direct-growth |
 | 4 | HDFC Defence Fund Direct Growth | Equity — Thematic (Defence) | https://groww.in/mutual-funds/hdfc-defence-fund-direct-growth |
 | 5 | HDFC Silver ETF FoF Direct Growth | Commodities — Silver FoF | https://groww.in/mutual-funds/hdfc-silver-etf-fof-direct-growth |
+| 6 | NJ Flexi Cap Fund Direct Growth | Equity — Flexi Cap | https://groww.in/mutual-funds/nj-flexi-cap-fund-direct-growth |
+| 7 | NJ ELSS Tax Saver Scheme Direct Growth | Equity — ELSS | https://groww.in/mutual-funds/nj-elss-tax-saver-scheme-direct-growth |
+| 8 | Nippon India Small Cap Fund Direct Growth | Equity — Small Cap | https://groww.in/mutual-funds/nippon-india-small-cap-fund-direct-growth |
+| 9 | Nippon India Large Cap Fund Direct Growth | Equity — Large Cap | https://groww.in/mutual-funds/nippon-india-large-cap-fund-direct-growth |
+| 10 | Nippon India Growth Mid Cap Fund Direct Growth | Equity — Mid Cap | https://groww.in/mutual-funds/nippon-india-growth-mid-cap-fund-direct-growth |
+| 11 | Motilal Oswal Most Focused Midcap 30 Fund Direct Growth | Equity — Mid Cap | https://groww.in/mutual-funds/motilal-oswal-most-focused-midcap-30-fund-direct-growth |
+| 12 | Motilal Oswal Large and Midcap Fund Direct Growth | Equity — Large & Mid Cap | https://groww.in/mutual-funds/motilal-oswal-large-and-midcap-fund-direct-growth |
+| 13 | Motilal Oswal Small Cap Fund Direct Growth | Equity — Small Cap | https://groww.in/mutual-funds/motilal-oswal-small-cap-fund-direct-growth |
+| 14 | Groww Gold ETF FoF Direct Growth | Commodities — Gold FoF | https://groww.in/mutual-funds/groww-gold-etf-fof-direct-growth |
+| 15 | Groww Small Cap Fund Direct Growth | Equity — Small Cap | https://groww.in/mutual-funds/groww-small-cap-fund-direct-growth |
+| 16 | Groww Multicap Fund Direct Growth | Equity — Multi Cap | https://groww.in/mutual-funds/groww-multicap-fund-direct-growth |
+| 17 | Bajaj Finserv Small Cap Fund Direct Growth | Equity — Small Cap | https://groww.in/mutual-funds/bajaj-finserv-small-cap-fund-direct-growth |
+| 18 | Bajaj Finserv Flexi Cap Fund Direct Growth | Equity — Flexi Cap | https://groww.in/mutual-funds/bajaj-finserv-flexi-cap-fund-direct-growth |
+| 19 | Bajaj Finserv Large and Mid Cap Fund Direct Growth | Equity — Large & Mid Cap | https://groww.in/mutual-funds/bajaj-finserv-large-and-mid-cap-fund-direct-growth |
+| 20 | ICICI Prudential Top 100 Fund Direct Growth | Equity — Large & Mid Cap | https://groww.in/mutual-funds/icici-prudential-top-100-fund-direct-growth |
 
-**Category coverage:** mid-cap, flexi-cap, small-cap, thematic, commodities (FoF) — satisfies problem-statement diversity without ELSS in this cohort.
+**Category coverage:** mid-cap, flexi-cap, small-cap, large-cap, thematic, commodities (FoF), ELSS, multi-cap — satisfies problem-statement diversity with multiple AMCs.
 
 **Per-scheme facts available on Groww pages (for FAQ scope):** expense ratio, exit load, minimum SIP, riskometer, benchmark, NAV date — e.g. [HDFC Silver ETF FoF](https://groww.in/mutual-funds/hdfc-silver-etf-fof-direct-growth) (expense ratio 0.21%, min SIP ₹100, exit load 1% within 15 days), [HDFC Defence Fund](https://groww.in/mutual-funds/hdfc-defence-fund-direct-growth) (benchmark: Nifty India Defence Total Return Index, exit load 1% within 1 year).
 
@@ -388,10 +403,10 @@ LLM_MAX_TOKENS=300   # Limit response length
 
 #### Closed corpus — `corpus/manifest.yaml` (authoritative allowlist)
 
-Only these five URLs may be fetched, chunked, retrieved, or cited:
+Only these twenty URLs may be fetched, chunked, retrieved, or cited:
 
 ```yaml
-corpus_version: "1.0"
+corpus_version: "2.0"
 policy: closed_allowlist
 allowed_urls:
   - url: https://groww.in/mutual-funds/hdfc-mid-cap-fund-direct-growth
@@ -408,6 +423,51 @@ allowed_urls:
     document_type: groww_scheme_page
   - url: https://groww.in/mutual-funds/hdfc-silver-etf-fof-direct-growth
     scheme_id: hdfc-silver-etf-fof-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/nj-flexi-cap-fund-direct-growth
+    scheme_id: nj-flexi-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/nj-elss-tax-saver-scheme-direct-growth
+    scheme_id: nj-elss-tax-saver-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/nippon-india-small-cap-fund-direct-growth
+    scheme_id: nippon-india-small-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/nippon-india-large-cap-fund-direct-growth
+    scheme_id: nippon-india-large-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/nippon-india-growth-mid-cap-fund-direct-growth
+    scheme_id: nippon-india-growth-mid-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/motilal-oswal-most-focused-midcap-30-fund-direct-growth
+    scheme_id: motilal-oswal-midcap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/motilal-oswal-large-and-midcap-fund-direct-growth
+    scheme_id: motilal-oswal-large-midcap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/motilal-oswal-small-cap-fund-direct-growth
+    scheme_id: motilal-oswal-small-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/groww-gold-etf-fof-direct-growth
+    scheme_id: groww-gold-etf-fof-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/groww-small-cap-fund-direct-growth
+    scheme_id: groww-small-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/groww-multicap-fund-direct-growth
+    scheme_id: groww-multicap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/bajaj-finserv-small-cap-fund-direct-growth
+    scheme_id: bajaj-finserv-small-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/bajaj-finserv-flexi-cap-fund-direct-growth
+    scheme_id: bajaj-finserv-flexi-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/bajaj-finserv-large-and-mid-cap-fund-direct-growth
+    scheme_id: bajaj-finserv-large-mid-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/icici-prudential-top-100-fund-direct-growth
+    scheme_id: icici-prudential-large-mid-cap-direct-growth
     document_type: groww_scheme_page
 ```
 
@@ -442,7 +502,7 @@ allowed_urls:
 └── README.md
 ```
 
-**Exit criteria:** `corpus/manifest.yaml` contains **exactly 5 URLs** (no extras); `corpus/schemes.json` matches; README states closed-corpus policy; category diversity = mid-cap, flexi-cap, small-cap, thematic, commodities.
+**Exit criteria:** `corpus/manifest.yaml` contains **exactly 20 URLs** (no extras); `corpus/schemes.json` matches; README states closed-corpus policy; category diversity = mid-cap, flexi-cap, small-cap, large-cap, thematic, commodities, ELSS, multi-cap.
 
 ---
 
@@ -450,7 +510,7 @@ allowed_urls:
 
 **Edge cases:** [phase-1-edge-cases.md](./edge-cases/phase-1-edge-cases.md)
 
-**Goals:** Ingest and index **only** the five allowlisted Groww pages — no other fetches.
+**Goals:** Ingest and index **only** the twenty allowlisted Groww pages — no other fetches.
 
 Implement Phase 1 **one subphase at a time**. Each subphase has its own exit criteria; do not start the next until the current subphase passes.
 
@@ -469,7 +529,7 @@ flowchart LR
 
 | Subphase | Focus | Primary output |
 |----------|--------|----------------|
-| **1.1** | Allowlist fetcher | `ingestion/raw/*.html` (5 files) |
+| **1.1** | Allowlist fetcher | `ingestion/raw/*.html` (20 files) |
 | **1.2** | Parse & normalize | `ingestion/parsed/*.json` per URL |
 | **1.3** | Chunking + provenance | `ingestion/chunks/*.jsonl` |
 | **1.4** | Embeddings + vector index | `data/chroma/` populated |
@@ -490,12 +550,12 @@ flowchart LR
 | Redirects | Follow only if final URL matches manifest canonical URL |
 | Storage | `ingestion/raw/{scheme_id}.html` + sidecar `{scheme_id}.meta.json` (`fetched_at`, `status_code`, `content_length`) |
 
-**Deliverables:** `ingestion/fetcher.py`, `ingestion/fetch_all.py` (CLI: fetch five URLs)
+**Deliverables:** `ingestion/fetcher.py`, `ingestion/fetch_all.py` (CLI: fetch twenty URLs)
 
 **Exit criteria:**
 
-- [ ] Exactly **5** raw HTML files exist (one per `scheme_id`)
-- [ ] Sixth URL attempt fails with allowlist error (see P1-EC-01)
+- [ ] Exactly **20** raw HTML files exist (one per `scheme_id`)
+- [ ] Twenty-first URL attempt fails with allowlist error (see P1-EC-01)
 - [ ] Each sidecar records `fetched_at` (ISO 8601)
 
 **Suggested command:** `python -m ingestion.fetch_all`
@@ -518,7 +578,7 @@ flowchart LR
 
 **Exit criteria:**
 
-- [ ] **5** parsed JSON files under `ingestion/parsed/`
+- [ ] **20** parsed JSON files under `ingestion/parsed/`
 - [ ] Each file has non-empty `text` OR documented snapshot fallback for that scheme
 - [ ] Expense ratio / exit load / SIP keywords present in text for spot-check (Mid Cap, Silver FoF)
 
@@ -542,7 +602,7 @@ flowchart LR
 **Exit criteria:**
 
 - [ ] Every allowlisted URL produces ≥1 chunk (P1-EC-16)
-- [ ] 100% of chunks have `source_url` ∈ five URL allowlist (P1-EC-17)
+- [ ] 100% of chunks have `source_url` ∈ twenty URL allowlist (P1-EC-17)
 - [ ] Spot-check: “exit load” query terms appear in Defence or Silver FoF chunks
 
 **Suggested command:** `python -m ingestion.chunk_all`
@@ -564,7 +624,7 @@ flowchart LR
 
 **Exit criteria:**
 
-- [ ] Vector store reports **5** distinct `source_url` values in metadata
+- [ ] Vector store reports **20** distinct `source_url` values in metadata
 - [ ] Sample similarity query (“expense ratio mid cap”) returns Mid Cap URL in top-5
 - [ ] Re-running indexer is idempotent (chunk count stable)
 
@@ -580,14 +640,14 @@ flowchart LR
 |------|--------|
 | `last_updated.json` | Per `scheme_id`: `fetched_at`, optional `nav_date` parsed from page |
 | SQLite metadata | Document-level rows: `scheme_id`, `source_url`, `chunk_count`, `fetched_at`, `quality` |
-| Corpus status shape | Prepare fields for Phase 5 `GET /corpus/status` (`document_count: 5`) |
+| Corpus status shape | Prepare fields for Phase 5 `GET /corpus/status` (`document_count: 20`) |
 
 **Deliverables:** `ingestion/metadata.py`, updated `corpus/last_updated.json`, `data/corpus_meta.db`
 
 **Exit criteria:**
 
-- [ ] `corpus/last_updated.json` has entries for all **5** scheme IDs
-- [ ] `document_count` logic returns 5 when all ingests succeeded
+- [ ] `corpus/last_updated.json` has entries for all **20** scheme IDs
+- [ ] `document_count` logic returns 20 when all ingests succeeded
 - [ ] Footer date fallback = `fetched_at` when NAV date not parsed (P1-EC-21)
 
 ---
@@ -608,8 +668,8 @@ flowchart LR
 
 **Exit criteria (Phase 1 complete):**
 
-- [ ] `python ingestion/run_pipeline.py --step all` succeeds for all 5 URLs (or documented partial + snapshot fallback)
-- [ ] Smoke test: **5/5** sample queries return answer-bearing text in top-3 chunks (architecture exit criteria)
+- [ ] `python ingestion/run_pipeline.py --step all` succeeds for all 20 URLs (or documented partial + snapshot fallback)
+- [ ] Smoke test: **20/20** sample queries return answer-bearing text in top-3 chunks (architecture exit criteria)
 - [ ] No chunk or citation URL outside allowlist
 - [ ] GitHub Actions workflow triggers daily and commits updated corpus data
 
@@ -639,10 +699,10 @@ flowchart LR
 **Phase 1 deliverables (aggregate):**
 
 - `ingestion/run_pipeline.py`
-- Indexed corpus: **exactly 5** source documents in vector metadata
+- Indexed corpus: **exactly 20** source documents in vector metadata
 - `corpus/last_updated.json` populated
 
-**Phase 1 exit criteria (aggregate):** All subphases 1.1–1.6 complete; smoke test passes for 5 sample factual queries.
+**Phase 1 exit criteria (aggregate):** All subphases 1.1–1.6 complete; smoke test passes for 20 sample factual queries.
 
 ---
 
@@ -654,7 +714,7 @@ flowchart LR
 
 #### Retrieval Strategy: Scheme-Aware Hybrid Search
 
-Given the closed 5-scheme corpus, pure semantic search achieves ~60% accuracy (fails on generic terms like "exit load"). Phase 2 implements:
+Given the closed 20-scheme corpus, pure semantic search achieves ~60% accuracy (fails on generic terms like "exit load"). Phase 2 implements:
 
 ```
 User Query → Scheme Detection → Filtered Retrieval → Keyword Reranking → Top Results
@@ -673,7 +733,7 @@ User Query → Scheme Detection → Filtered Retrieval → Keyword Reranking →
 **Step 3: Lightweight Keyword Reranking**
 - Boost chunks containing more query terms
 - Simple dot product: `score *= (1.0 - 0.1 * match_count)`
-- Effective for small corpus (43 chunks)
+- Effective for small corpus (172 chunks)
 
 **Expected Results:**
 
