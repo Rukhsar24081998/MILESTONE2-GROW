@@ -1,9 +1,7 @@
-corpus_version: "1.0"
+corpus_version: "2.0"
 policy: closed_allowlist
-citation_rules:
-  factual: scheme_groww_url
-  refusal_default_scheme_id: hdfc-flexi-cap-direct-growth
 allowed_urls:
+  # HDFC schemes (original 5)
   - url: https://groww.in/mutual-funds/hdfc-mid-cap-fund-direct-growth
     scheme_id: hdfc-mid-cap-direct-growth
     document_type: groww_scheme_page
@@ -18,4 +16,61 @@ allowed_urls:
     document_type: groww_scheme_page
   - url: https://groww.in/mutual-funds/hdfc-silver-etf-fof-direct-growth
     scheme_id: hdfc-silver-etf-fof-direct-growth
+    document_type: groww_scheme_page
+
+  # NJ schemes
+  - url: https://groww.in/mutual-funds/nj-flexi-cap-fund-direct-growth
+    scheme_id: nj-flexi-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/nj-elss-tax-saver-scheme-direct-growth
+    scheme_id: nj-elss-tax-saver-direct-growth
+    document_type: groww_scheme_page
+
+  # Nippon India schemes
+  - url: https://groww.in/mutual-funds/nippon-india-small-cap-fund-direct-growth
+    scheme_id: nippon-india-small-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/nippon-india-large-cap-fund-direct-growth
+    scheme_id: nippon-india-large-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/nippon-india-growth-mid-cap-fund-direct-growth
+    scheme_id: nippon-india-growth-mid-cap-direct-growth
+    document_type: groww_scheme_page
+
+  # Motilal Oswal schemes
+  - url: https://groww.in/mutual-funds/motilal-oswal-most-focused-midcap-30-fund-direct-growth
+    scheme_id: motilal-oswal-midcap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/motilal-oswal-large-and-midcap-fund-direct-growth
+    scheme_id: motilal-oswal-large-midcap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/motilal-oswal-small-cap-fund-direct-growth
+    scheme_id: motilal-oswal-small-cap-direct-growth
+    document_type: groww_scheme_page
+
+  # Groww schemes
+  - url: https://groww.in/mutual-funds/groww-gold-etf-fof-direct-growth
+    scheme_id: groww-gold-etf-fof-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/groww-small-cap-fund-direct-growth
+    scheme_id: groww-small-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/groww-multicap-fund-direct-growth
+    scheme_id: groww-multicap-direct-growth
+    document_type: groww_scheme_page
+
+  # Bajaj Finserv schemes
+  - url: https://groww.in/mutual-funds/bajaj-finserv-small-cap-fund-direct-growth
+    scheme_id: bajaj-finserv-small-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/bajaj-finserv-flexi-cap-fund-direct-growth
+    scheme_id: bajaj-finserv-flexi-cap-direct-growth
+    document_type: groww_scheme_page
+  - url: https://groww.in/mutual-funds/bajaj-finserv-large-and-mid-cap-fund-direct-growth
+    scheme_id: bajaj-finserv-large-mid-cap-direct-growth
+    document_type: groww_scheme_page
+
+  # ICICI Prudential schemes
+  - url: https://groww.in/mutual-funds/icici-prudential-top-100-fund-direct-growth
+    scheme_id: icici-prudential-large-mid-cap-direct-growth
     document_type: groww_scheme_page

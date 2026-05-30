@@ -1,7 +1,7 @@
 {
   "amc": {
-    "name": "HDFC Mutual Fund",
-    "website": "http://www.hdfcfund.com"
+    "name": "Multiple AMCs",
+    "website": "https://groww.in/mutual-funds"
   },
   "product_context": "groww",
   "schemes": [
@@ -17,12 +17,7 @@
       "name": "HDFC Flexi Cap Direct Plan Growth",
       "category": "equity_flexi_cap",
       "groww_url": "https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth",
-      "aliases": [
-        "HDFC Equity Fund",
-        "hdfc equity fund",
-        "HDFC Flexi Cap",
-        "flexi cap fund"
-      ]
+      "aliases": ["HDFC Equity Fund", "hdfc equity fund", "HDFC Flexi Cap", "flexi cap fund"]
     },
     {
       "id": "hdfc-small-cap-direct-growth",
@@ -44,6 +39,111 @@
       "category": "commodities_silver_fof",
       "groww_url": "https://groww.in/mutual-funds/hdfc-silver-etf-fof-direct-growth",
       "aliases": ["HDFC Silver FoF", "silver FoF", "silver etf fof"]
+    },
+    {
+      "id": "nj-flexi-cap-direct-growth",
+      "name": "NJ Flexi Cap Fund Direct Growth",
+      "category": "equity_flexi_cap",
+      "groww_url": "https://groww.in/mutual-funds/nj-flexi-cap-fund-direct-growth",
+      "aliases": ["NJ Flexi Cap", "nj flexi cap"]
+    },
+    {
+      "id": "nj-elss-tax-saver-direct-growth",
+      "name": "NJ ELSS Tax Saver Scheme Direct Growth",
+      "category": "equity_elss",
+      "groww_url": "https://groww.in/mutual-funds/nj-elss-tax-saver-scheme-direct-growth",
+      "aliases": ["NJ ELSS", "NJ Tax Saver", "nj elss"]
+    },
+    {
+      "id": "nippon-india-small-cap-direct-growth",
+      "name": "Nippon India Small Cap Fund Direct Growth",
+      "category": "equity_small_cap",
+      "groww_url": "https://groww.in/mutual-funds/nippon-india-small-cap-fund-direct-growth",
+      "aliases": ["Nippon Small Cap", "Nippon India Small Cap", "nippon small cap"]
+    },
+    {
+      "id": "nippon-india-large-cap-direct-growth",
+      "name": "Nippon India Large Cap Fund Direct Growth",
+      "category": "equity_large_cap",
+      "groww_url": "https://groww.in/mutual-funds/nippon-india-large-cap-fund-direct-growth",
+      "aliases": ["Nippon Large Cap", "Nippon India Large Cap", "nippon large cap"]
+    },
+    {
+      "id": "nippon-india-growth-mid-cap-direct-growth",
+      "name": "Nippon India Growth Mid Cap Fund Direct Growth",
+      "category": "equity_mid_cap",
+      "groww_url": "https://groww.in/mutual-funds/nippon-india-growth-mid-cap-fund-direct-growth",
+      "aliases": ["Nippon Mid Cap", "Nippon Growth Mid Cap", "nippon mid cap"]
+    },
+    {
+      "id": "motilal-oswal-midcap-direct-growth",
+      "name": "Motilal Oswal Midcap Fund Direct Growth",
+      "category": "equity_mid_cap",
+      "groww_url": "https://groww.in/mutual-funds/motilal-oswal-most-focused-midcap-30-fund-direct-growth",
+      "aliases": ["Motilal Oswal Midcap", "MO Midcap", "motilal midcap"]
+    },
+    {
+      "id": "motilal-oswal-large-midcap-direct-growth",
+      "name": "Motilal Oswal Large and Midcap Fund Direct Growth",
+      "category": "equity_large_mid_cap",
+      "groww_url": "https://groww.in/mutual-funds/motilal-oswal-large-and-midcap-fund-direct-growth",
+      "aliases": ["Motilal Oswal Large Midcap", "MO Large Midcap", "motilal large midcap"]
+    },
+    {
+      "id": "motilal-oswal-small-cap-direct-growth",
+      "name": "Motilal Oswal Small Cap Fund Direct Growth",
+      "category": "equity_small_cap",
+      "groww_url": "https://groww.in/mutual-funds/motilal-oswal-small-cap-fund-direct-growth",
+      "aliases": ["Motilal Oswal Small Cap", "MO Small Cap", "motilal small cap"]
+    },
+    {
+      "id": "groww-gold-etf-fof-direct-growth",
+      "name": "Groww Gold ETF FOF Direct Growth",
+      "category": "commodities_gold_fof",
+      "groww_url": "https://groww.in/mutual-funds/groww-gold-etf-fof-direct-growth",
+      "aliases": ["Groww Gold FoF", "Groww Gold ETF", "groww gold"]
+    },
+    {
+      "id": "groww-small-cap-direct-growth",
+      "name": "Groww Small Cap Fund Direct Growth",
+      "category": "equity_small_cap",
+      "groww_url": "https://groww.in/mutual-funds/groww-small-cap-fund-direct-growth",
+      "aliases": ["Groww Small Cap", "groww small cap"]
+    },
+    {
+      "id": "groww-multicap-direct-growth",
+      "name": "Groww Multicap Fund Direct Growth",
+      "category": "equity_multi_cap",
+      "groww_url": "https://groww.in/mutual-funds/groww-multicap-fund-direct-growth",
+      "aliases": ["Groww Multicap", "groww multicap"]
+    },
+    {
+      "id": "bajaj-finserv-small-cap-direct-growth",
+      "name": "Bajaj Finserv Small Cap Fund Direct Growth",
+      "category": "equity_small_cap",
+      "groww_url": "https://groww.in/mutual-funds/bajaj-finserv-small-cap-fund-direct-growth",
+      "aliases": ["Bajaj Finserv Small Cap", "Bajaj Small Cap", "bajaj small cap"]
+    },
+    {
+      "id": "bajaj-finserv-flexi-cap-direct-growth",
+      "name": "Bajaj Finserv Flexi Cap Fund Direct Growth",
+      "category": "equity_flexi_cap",
+      "groww_url": "https://groww.in/mutual-funds/bajaj-finserv-flexi-cap-fund-direct-growth",
+      "aliases": ["Bajaj Finserv Flexi Cap", "Bajaj Flexi Cap", "bajaj flexi cap"]
+    },
+    {
+      "id": "bajaj-finserv-large-mid-cap-direct-growth",
+      "name": "Bajaj Finserv Large and Mid Cap Fund Direct Growth",
+      "category": "equity_large_mid_cap",
+      "groww_url": "https://groww.in/mutual-funds/bajaj-finserv-large-and-mid-cap-fund-direct-growth",
+      "aliases": ["Bajaj Finserv Large Mid Cap", "Bajaj Large Mid Cap", "bajaj large midcap"]
+    },
+    {
+      "id": "icici-prudential-large-mid-cap-direct-growth",
+      "name": "ICICI Prudential Large & Mid Cap Fund Direct Plan Growth",
+      "category": "equity_large_mid_cap",
+      "groww_url": "https://groww.in/mutual-funds/icici-prudential-top-100-fund-direct-growth",
+      "aliases": ["ICICI Prudential Large Mid Cap", "ICICI Top 100", "icici large midcap"]
     }
   ]
 }
