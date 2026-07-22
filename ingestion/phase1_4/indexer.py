@@ -29,9 +29,12 @@ def get_or_create_collection(
 ) -> chromadb.Collection:
     """Get or create the ChromaDB collection using the configured embedding function."""
     emb_fn = get_embedding_function()
+    if emb_fn is None:
+        # Keyword/JSONL path only — collection without custom embeddings.
+        return client.get_or_create_collection(name=collection_name)
     return client.get_or_create_collection(
         name=collection_name,
-        embedding_function=emb_fn
+        embedding_function=emb_fn,
     )
 
 

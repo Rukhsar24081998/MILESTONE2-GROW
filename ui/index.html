@@ -699,16 +699,16 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
-        // Backend API URL - Update this when deploying to production
-        // Local: 'http://localhost:8000'
-        // Production: 'https://web-production-b0d3f.up.railway.app'
+        // Backend API URL — local uvicorn on localhost; Render free tier in production
+        // Override anytime with: <meta name="api-base" content="https://…">
         const API_BASE = (() => {
             const meta = document.querySelector('meta[name="api-base"]');
             if (meta && meta.content) return meta.content.replace(/\/$/, '');
-            const prodApi = 'https://web-production-b0d3f.up.railway.app';
-            // Default to deployed API so local UI (localhost:5173) works without uvicorn.
-            // For local backend: add <meta name="api-base" content="http://localhost:8000"> in <head>.
-            return prodApi;
+            const host = window.location.hostname;
+            if (host === 'localhost' || host === '127.0.0.1') {
+                return 'http://localhost:8000';
+            }
+            return 'https://milestone2-groww-backend.onrender.com';
         })();
         let isChatActive = false;
 

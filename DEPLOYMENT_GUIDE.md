@@ -1,15 +1,19 @@
 # 🚀 Complete Deployment Guide
 
 This guide shows you how to deploy the Mutual Fund FAQ Assistant with:
-- **Backend (FastAPI)** → Render.com
+- **Backend (FastAPI)** → Render.com (**free** web service)
 - **Frontend (HTML/CSS/JS)** → Vercel
+
+Railway is **not** used. The UI points at Render: `https://milestone2-groww-backend.onrender.com`.
+
+**Free-tier notes:** 750 instance hours/month; spins down after ~15 minutes idle (~1 minute cold start on the next request).
 
 ---
 
 ## 📋 Prerequisites
 
 1. GitHub account (already have: https://github.com/Rukhsar24081998/MILESTONE2-GROW)
-2. Render.com account (free tier available)
+2. Render.com account (free tier — no credit card required for free web services)
 3. Vercel account (already set up)
 4. Groq API key (already have)
 
@@ -30,7 +34,22 @@ git push origin main
 
 ---
 
-## 🖥️ Step 2: Deploy Backend to Render.com
+## 🖥️ Step 2: Deploy Backend to Render.com (free)
+
+### Option A — Blueprint (recommended)
+
+Repo includes `render.yaml` (free plan, Singapore region).
+
+1. Push this repo to GitHub (`main`).
+2. Open: https://dashboard.render.com/blueprints
+3. **New Blueprint Instance** → select `Rukhsar24081998/MILESTONE2-GROW`
+4. When prompted, set **`GROQ_API_KEY`** (required).
+5. Apply. Service URL will be:
+   ```
+   https://milestone2-groww-backend.onrender.com
+   ```
+
+### Option B — Manual Web Service
 
 ### 2.1 Create Render Account
 1. Go to: https://render.com
@@ -45,10 +64,11 @@ git push origin main
 
 **Settings:**
 - **Name**: `milestone2-groww-backend`
-- **Region**: Choose closest to you (e.g., Oregon, Frankfurt)
+- **Region**: Singapore (or closest)
 - **Branch**: `main`
 - **Root Directory**: Leave blank (root of repo)
 - **Runtime**: `Python 3`
+- **Instance type**: **Free**
 
 **Build Command:**
 ```bash
@@ -68,7 +88,7 @@ Click **"Advanced"** → **"Add Environment Variable"**:
 |----------|-------|
 | `GROQ_API_KEY` | `your_groq_api_key_here` |
 | `LLM_PROVIDER` | `groq` |
-| `LLM_MODEL` | `llama-3.3-70b-versatile` |
+| `LLM_MODEL` | `llama-3.1-8b-instant` |
 | `LLM_TEMPERATURE` | `0.1` |
 | `LLM_MAX_TOKENS` | `300` |
 | `EMBEDDING_MODEL` | `BAAI/bge-small-en-v1.5` |
@@ -77,7 +97,7 @@ Click **"Advanced"** → **"Add Environment Variable"**:
 
 Click **"Create Web Service"**
 
-**Wait for deployment** (5-10 minutes for first build)
+**Wait for deployment** (5-10 minutes for first build; torch/embeddings make the first build slow)
 
 **Your backend URL will be:**
 ```
@@ -87,36 +107,24 @@ https://milestone2-groww-backend.onrender.com
 ### 2.5 Test Backend
 
 ```bash
-# Health check
+# Health check (first request after idle may take ~1 min on free tier)
 curl https://milestone2-groww-backend.onrender.com/health
 
 # Test API
-curl -X POST https://milestone2-groww-backend.onrender.com/api/ask \
+curl -X POST https://milestone2-groww-backend.onrender.com/ask \
   -H "Content-Type: application/json" \
-  -d '{"query": "What is the expense ratio of HDFC Mid Cap Fund?"}'
+  -d '{"query": "What is the expense ratio of Groww Nifty 50?"}'
 ```
+
+### Remove old Railway backend
+
+If a Railway service still exists in your Railway dashboard, delete it there (the app no longer calls Railway). No Railway config remains in this repo.
 
 ---
 
-## 🌐 Step 3: Update Frontend with Backend URL
+## 🌐 Step 3: Frontend API URL
 
-Once backend is deployed on Render:
-
-1. Copy your Render backend URL (e.g., `https://milestone2-groww-backend.onrender.com`)
-
-2. Update `ui/index.html`:
-```javascript
-const API_BASE = window.location.hostname === 'localhost' 
-  ? 'http://localhost:8000' 
-  : 'https://milestone2-groww-backend.onrender.com';  // ← Update this
-```
-
-3. Commit and push:
-```bash
-git add ui/index.html
-git commit -m "update: Set Render backend URL for production"
-git push origin main
-```
+`ui/index.html` already uses Render in production and `http://localhost:8000` on localhost. No change needed unless your Render service name differs — then update the production URL in `API_BASE`.
 
 ---
 
@@ -184,7 +192,7 @@ curl https://milestone2-groww.vercel.app
 curl https://milestone2-groww-backend.onrender.com/health
 
 # Full Q&A
-curl -X POST https://milestone2-groww-backend.onrender.com/api/ask \
+curl -X POST https://milestone2-groww-backend.onrender.com/ask \
   -H "Content-Type: application/json" \
   -d '{"query": "What is the NAV of HDFC Small Cap Fund?"}'
 ```
@@ -235,7 +243,7 @@ https://milestone2-groww.vercel.app (Frontend - Vercel)
 https://milestone2-groww-backend.onrender.com (Backend - Render)
     ↓
 ├── FastAPI Server
-├── Groq LLM (llama-3.3-70b-versatile)
+├── Groq LLM (llama-3.1-8b-instant)
 ├── ChromaDB (Vector Store)
 └── BGE Embeddings
 ```
@@ -244,7 +252,7 @@ https://milestone2-groww-backend.onrender.com (Backend - Render)
 1. User opens Vercel URL
 2. Frontend loads (HTML/CSS/JS)
 3. User asks question
-4. Frontend sends POST to Render backend `/api/ask`
+4. Frontend sends POST to Render backend `/ask`
 5. Backend:
    - Retrieves context from ChromaDB
    - Sends to Groq LLM
@@ -264,25 +272,6 @@ https://milestone2-groww-backend.onrender.com (Backend - Render)
 
 ---
 
-## 🚀 Alternative: Deploy Backend on Railway
-
-If you prefer Railway over Render:
-
-### Railway Setup:
-1. Go to: https://railway.app
-2. Sign in with GitHub
-3. **New Project** → **Deploy from GitHub repo**
-4. Select: `Rukhsar24081998/MILESTONE2-GROW`
-5. Add environment variables (same as Render)
-6. Deploy!
-
-**Railway advantages:**
-- $5 free credit/month
-- Faster cold starts than Render
-- Better for always-on services
-
----
-
 ## 🔄 Auto-Deploy on Push
 
 Both Render and Vercel are connected to GitHub:
@@ -299,16 +288,13 @@ git push origin main
 
 ## 📝 Summary Checklist
 
-- [ ] Push code to GitHub
-- [ ] Create Render web service
-- [ ] Add environment variables on Render
-- [ ] Deploy backend on Render
-- [ ] Test backend API
-- [ ] Update `ui/index.html` with Render URL
-- [ ] Update `vercel.json` for static-only
+- [ ] Push code to GitHub (includes `render.yaml` + Render `API_BASE`)
+- [ ] Create Render free web service (Blueprint or manual)
+- [ ] Set `GROQ_API_KEY` on Render
+- [ ] Confirm `https://milestone2-groww-backend.onrender.com/health`
+- [ ] Delete any leftover Railway service in the Railway dashboard
 - [ ] Deploy frontend on Vercel
-- [ ] Test complete flow
-- [ ] Share your live URLs! 🎉
+- [ ] Test complete chat flow (allow ~1 min cold start on free tier)
 
 ---
 

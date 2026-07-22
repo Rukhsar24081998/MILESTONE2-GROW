@@ -44,6 +44,19 @@ logger = logging.getLogger(__name__)
 def _ensure_vector_index() -> None:
     """Build Chroma index from committed chunks when the store is empty (e.g. on Render)."""
     try:
+        from app.rag.embedder import get_embedding_function
+
+        if get_embedding_function() is None:
+            logger.info(
+                "Embeddings unavailable — skipping Chroma index build "
+                "(keyword/JSONL retrieval will be used)."
+            )
+            return
+    except Exception as exc:
+        logger.warning("Could not init embeddings: %s", exc)
+        return
+
+    try:
         client = get_chroma_client()
         collection = get_collection(client)
         if collection is not None and collection.count() > 0:
