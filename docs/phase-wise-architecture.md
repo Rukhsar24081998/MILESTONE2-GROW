@@ -274,7 +274,7 @@ flowchart LR
 | UI | React + Vite or plain HTML/JS | Same |
 | Vector DB | Chroma (local) or FAISS + SQLite metadata | Same |
 | Embeddings | `sentence-transformers` or OpenAI `text-embedding-3-small` | Same |
-| **LLM** | **Groq API (llama-3.1-8b-instant, mixtral-8x7b-32768)** | Same |
+| **LLM** | **Groq API (openai/gpt-oss-20b, openai/gpt-oss-120b)** | Same |
 | Crawling | `httpx` + `beautifulsoup4`; PDF via `pypdf` | Same |
 | Orchestration | LangChain or custom thin wrapper | Custom |
 
@@ -285,16 +285,16 @@ flowchart LR
 **Provider:** [Groq](https://groq.com) — Ultra-fast inference for open-source LLMs
 
 **Recommended Models:**
-- `llama-3.1-8b-instant` — Fast, good for factual Q&A (default)
-- `mixtral-8x7b-32768` — Larger context window (32k tokens)
-- `llama-3.3-70b-versatile` — Higher accuracy for complex queries
+- `openai/gpt-oss-20b` — Fast, good for factual Q&A (default; replaces deprecated `llama-3.1-8b-instant`)
+- `openai/gpt-oss-120b` — Higher accuracy for complex queries
+- `qwen/qwen3.6-27b` — Mid-tier alternative
 
 **Configuration:**
 ```bash
 # .env
 LLM_PROVIDER=groq
 GROQ_API_KEY=gsk_...
-LLM_MODEL=llama-3.1-8b-instant
+LLM_MODEL=openai/gpt-oss-20b
 LLM_TEMPERATURE=0.1  # Low for factual answers
 LLM_MAX_TOKENS=300   # Limit response length
 ```
@@ -303,7 +303,7 @@ LLM_MAX_TOKENS=300   # Limit response length
 - ⚡ **Ultra-low latency** (~100-300ms vs 1-3s for OpenAI)
 - 💰 **Cost-effective** — Free tier available, pay-per-use pricing
 - 🔒 **Privacy-friendly** — No training on your data
-- 🎯 **Open-source models** — Llama 3.1, Mixtral, Gemma
+- 🎯 **Open-source models** — GPT-OSS, Qwen, and others
 - 🌍 **No vendor lock-in** — Easy to switch models
 
 ---

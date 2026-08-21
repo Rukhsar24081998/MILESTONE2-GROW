@@ -1,7 +1,7 @@
 """Phase 3+ — Groq LLM integration for response generation.
 
 Uses Groq API for ultra-fast LLM inference with open-source models.
-Supports: llama-3.1-8b-instant, mixtral-8x7b-32768, llama-3.3-70b-versatile
+Supports: openai/gpt-oss-20b, openai/gpt-oss-120b, qwen/qwen3.6-27b
 """
 
 from __future__ import annotations

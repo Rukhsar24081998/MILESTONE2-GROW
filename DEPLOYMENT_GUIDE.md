@@ -88,7 +88,7 @@ Click **"Advanced"** → **"Add Environment Variable"**:
 |----------|-------|
 | `GROQ_API_KEY` | `your_groq_api_key_here` |
 | `LLM_PROVIDER` | `groq` |
-| `LLM_MODEL` | `llama-3.1-8b-instant` |
+| `LLM_MODEL` | `openai/gpt-oss-20b` |
 | `LLM_TEMPERATURE` | `0.1` |
 | `LLM_MAX_TOKENS` | `300` |
 | `EMBEDDING_MODEL` | `BAAI/bge-small-en-v1.5` |
@@ -243,7 +243,7 @@ https://milestone2-groww.vercel.app (Frontend - Vercel)
 https://milestone2-groww-backend.onrender.com (Backend - Render)
     ↓
 ├── FastAPI Server
-├── Groq LLM (llama-3.1-8b-instant)
+├── Groq LLM (openai/gpt-oss-20b)
 ├── ChromaDB (Vector Store)
 └── BGE Embeddings
 ```

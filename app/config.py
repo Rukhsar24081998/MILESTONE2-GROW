@@ -25,7 +25,7 @@ VECTOR_STORE_DIR = INGESTION_DATA_DIR / "chroma"
 # LLM Configuration (Groq)
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-LLM_MODEL = os.getenv("LLM_MODEL", "llama-3.1-8b-instant")
+LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-oss-20b")
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.1"))  # Low for factual answers
 LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "300"))  # Limit response length
 
